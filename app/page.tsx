@@ -15,7 +15,8 @@ import {
   MessageSquare,
   Activity,
   Menu,
-  X
+  X,
+  Heart
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -336,9 +337,12 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-primary/20">
-              <Activity className="h-5 w-5 text-primary" />
+              <Heart className="h-5 w-5 text-primary" />
             </div>
-            <span className="text-lg font-bold text-foreground">MedTrack</span>
+            <div>
+              <span className="text-lg font-bold text-foreground">Sarah</span>
+              <p className="text-xs text-muted-foreground">Dashboards</p>
+            </div>
           </div>
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>

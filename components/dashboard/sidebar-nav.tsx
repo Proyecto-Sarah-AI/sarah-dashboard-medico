@@ -8,10 +8,12 @@ import {
   AlertTriangle,
   Calendar,
   MessageSquare,
-  Settings,
-  Heart
+  Heart,
+  Sun,
+  Moon
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTheme } from "@/components/theme-provider"
 
 interface SidebarNavProps {
   activeSection: string
@@ -28,6 +30,8 @@ const navItems = [
 ]
 
 export function SidebarNav({ activeSection, onSectionChange }: SidebarNavProps) {
+  const { theme, toggleTheme } = useTheme()
+
   return (
     <aside className="w-56 bg-sidebar border-r border-sidebar-border flex flex-col h-screen md:fixed md:left-0 md:top-0">
       {/* Logo */}
@@ -37,8 +41,8 @@ export function SidebarNav({ activeSection, onSectionChange }: SidebarNavProps) 
             <Heart className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-sidebar-foreground">MedTrack</h1>
-            <p className="text-xs text-muted-foreground">Obesidad</p>
+            <h1 className="text-lg font-bold text-sidebar-foreground">Sarah</h1>
+            <p className="text-xs text-muted-foreground">Dashboards</p>
           </div>
         </div>
       </div>
@@ -70,9 +74,14 @@ export function SidebarNav({ activeSection, onSectionChange }: SidebarNavProps) 
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          onClick={toggleTheme}
         >
-          <Settings className="h-4 w-4" />
-          Configuración
+          {theme === "dark" ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
+          {theme === "dark" ? "Modo claro" : "Modo oscuro"}
         </Button>
         <div className="mt-3 px-3 py-2 rounded-lg bg-muted/50">
           <p className="text-xs text-muted-foreground">Dr. Juan Pérez</p>
