@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import {
   Table,
   TableBody,
@@ -12,12 +13,16 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AlertBadge, MoodBadge } from "./alert-badge"
 import type { Patient } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
 interface PatientsTableProps {
   patients: Patient[]
   onSelectPatient?: (patient: Patient) => void
   selectedPatientId?: string
 }
+
+type SortKey = "name" | "bmi" | "bmiChange" | "adherence" | "mood" | "abandonmentRisk" | "treatmentRisk"
+type SortDirection = "asc" | "desc" | null
 
 function AdherenceBar({ value }: { value: number }) {
   const getColor = (val: number) => {
@@ -44,23 +49,177 @@ function AdherenceBar({ value }: { value: number }) {
   )
 }
 
+interface SortableHeaderProps {
+  label: string
+  sortKey: SortKey
+  currentSort: SortKey | null
+  direction: SortDirection
+  onSort: (key: SortKey) => void
+  className?: string
+}
+
+function SortableHeader({ label, sortKey, currentSort, direction, onSort, className }: SortableHeaderProps) {
+  const isActive = currentSort === sortKey
+  
+  return (
+    <TableHead 
+      className={cn(
+        "text-muted-foreground font-semibold text-xs uppercase tracking-wider py-3 cursor-pointer select-none hover:bg-muted/50 transition-colors",
+        className
+      )}
+      onClick={() => onSort(sortKey)}
+    >
+      <div className="flex items-center gap-1.5">
+        <span>{label}</span>
+        <span className={cn("transition-colors", isActive ? "text-foreground" : "text-muted-foreground/50")}>
+          {isActive && direction === "asc" ? (
+            <ArrowUp className="h-3.5 w-3.5" />
+          ) : isActive && direction === "desc" ? (
+            <ArrowDown className="h-3.5 w-3.5" />
+          ) : (
+            <ArrowUpDown className="h-3.5 w-3.5" />
+          )}
+        </span>
+      </div>
+    </TableHead>
+  )
+}
+
 export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: PatientsTableProps) {
+  const [sortKey, setSortKey] = useState<SortKey | null>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null)
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      if (sortDirection === "asc") {
+        setSortDirection("desc")
+      } else if (sortDirection === "desc") {
+        setSortKey(null)
+        setSortDirection(null)
+      } else {
+        setSortDirection("asc")
+      }
+    } else {
+      setSortKey(key)
+      setSortDirection("asc")
+    }
+  }
+
+  const sortedPatients = useMemo(() => {
+    if (!sortKey || !sortDirection) return patients
+
+    return [...patients].sort((a, b) => {
+      let aValue: number | string
+      let bValue: number | string
+
+      switch (sortKey) {
+        case "name":
+          aValue = a.name
+          bValue = b.name
+          break
+        case "bmi":
+          aValue = a.bmi
+          bValue = b.bmi
+          break
+        case "bmiChange":
+          aValue = a.bmiChange
+          bValue = b.bmiChange
+          break
+        case "adherence":
+          aValue = a.adherence
+          bValue = b.adherence
+          break
+        case "mood":
+          aValue = a.mood + a.motivation
+          bValue = b.mood + b.motivation
+          break
+        case "abandonmentRisk":
+          aValue = a.abandonmentRisk
+          bValue = b.abandonmentRisk
+          break
+        case "treatmentRisk":
+          aValue = a.treatmentRisk
+          bValue = b.treatmentRisk
+          break
+        default:
+          return 0
+      }
+
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sortDirection === "asc" 
+          ? aValue.localeCompare(bValue) 
+          : bValue.localeCompare(aValue)
+      }
+
+      return sortDirection === "asc" 
+        ? (aValue as number) - (bValue as number) 
+        : (bValue as number) - (aValue as number)
+    })
+  }, [patients, sortKey, sortDirection])
+
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border">
-            <TableHead className="text-muted-foreground font-semibold text-xs uppercase tracking-wider py-3">Paciente</TableHead>
-            <TableHead className="text-muted-foreground font-semibold text-xs uppercase tracking-wider text-center py-3">IMC</TableHead>
-            <TableHead className="text-muted-foreground font-semibold text-xs uppercase tracking-wider text-center py-3">Cambio IMC</TableHead>
-            <TableHead className="text-muted-foreground font-semibold text-xs uppercase tracking-wider py-3">Adherencia</TableHead>
-            <TableHead className="text-muted-foreground font-semibold text-xs uppercase tracking-wider text-center py-3">Estado</TableHead>
-            <TableHead className="text-muted-foreground font-semibold text-xs uppercase tracking-wider text-center py-3">Riesgo Abandono</TableHead>
-            <TableHead className="text-muted-foreground font-semibold text-xs uppercase tracking-wider text-center py-3">Riesgo Tratamiento</TableHead>
+            <SortableHeader 
+              label="Paciente" 
+              sortKey="name" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+            />
+            <SortableHeader 
+              label="IMC" 
+              sortKey="bmi" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+              className="text-center"
+            />
+            <SortableHeader 
+              label="Cambio IMC" 
+              sortKey="bmiChange" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+              className="text-center"
+            />
+            <SortableHeader 
+              label="Adherencia" 
+              sortKey="adherence" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+            />
+            <SortableHeader 
+              label="Estado" 
+              sortKey="mood" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+              className="text-center"
+            />
+            <SortableHeader 
+              label="Riesgo Abandono" 
+              sortKey="abandonmentRisk" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+              className="text-center"
+            />
+            <SortableHeader 
+              label="Riesgo Tratamiento" 
+              sortKey="treatmentRisk" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+              className="text-center"
+            />
           </TableRow>
         </TableHeader>
         <TableBody>
-          {patients.map((patient) => (
+          {sortedPatients.map((patient) => (
             <TableRow 
               key={patient.id}
               className={cn(

@@ -258,6 +258,77 @@ export const getAdherenceHistory = (patientId: string): AdherenceHistory[] => {
   }))
 }
 
+export interface DailyAdherence {
+  date: string
+  adherence: number
+  completed: boolean
+}
+
+export const getDailyAdherenceHistory = (patientId: string): DailyAdherence[] => {
+  const patient = patients.find(p => p.id === patientId)
+  if (!patient) return []
+
+  const baseAdherence = patient.adherence
+  const variance = patient.adherence > 80 ? 10 : patient.adherence > 60 ? 20 : 30
+
+  return Array.from({ length: 30 }, (_, i) => {
+    const day = 30 - i
+    const adherenceValue = Math.max(0, Math.min(100, baseAdherence + (Math.random() - 0.5) * variance))
+    return {
+      date: `Día ${day}`,
+      adherence: Math.round(adherenceValue),
+      completed: adherenceValue >= 50
+    }
+  }).reverse()
+}
+
+export interface WeeklyAdherence {
+  week: string
+  adherence: number
+  target: number
+}
+
+export const getWeeklyAdherenceHistory = (patientId: string): WeeklyAdherence[] => {
+  const patient = patients.find(p => p.id === patientId)
+  if (!patient) return []
+
+  const baseAdherence = patient.adherence
+  const variance = patient.adherence > 80 ? 8 : patient.adherence > 60 ? 15 : 25
+
+  return Array.from({ length: 8 }, (_, i) => ({
+    week: `Sem ${i + 1}`,
+    adherence: Math.round(Math.max(0, Math.min(100, baseAdherence + (Math.random() - 0.5) * variance))),
+    target: 80
+  }))
+}
+
+export interface SideEffectReport {
+  name: string
+  count: number
+  severity: "mild" | "moderate" | "severe"
+}
+
+export const getSideEffectsReport = (patientId: string): SideEffectReport[] => {
+  const patientSymptoms = getPatientSymptoms(patientId)
+  
+  const grouped = patientSymptoms.reduce((acc, s) => {
+    if (!acc[s.symptom]) {
+      acc[s.symptom] = { count: 0, maxSeverity: s.severity }
+    }
+    acc[s.symptom].count++
+    if (s.severity > acc[s.symptom].maxSeverity) {
+      acc[s.symptom].maxSeverity = s.severity
+    }
+    return acc
+  }, {} as Record<string, { count: number; maxSeverity: number }>)
+
+  return Object.entries(grouped).map(([name, data]) => ({
+    name,
+    count: data.count,
+    severity: data.maxSeverity === 1 ? "mild" : data.maxSeverity === 2 ? "moderate" : "severe"
+  })).sort((a, b) => b.count - a.count)
+}
+
 export const getMoodHistory = (patientId: string): MoodHistory[] => {
   const patient = patients.find(p => p.id === patientId)
   if (!patient) return []
