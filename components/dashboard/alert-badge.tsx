@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { Frown, Meh, Smile, SmilePlus, CircleOff } from "lucide-react"
 
 interface AlertBadgeProps {
   level: number
@@ -43,21 +44,22 @@ interface MoodBadgeProps {
 }
 
 const moodConfig = {
-  1: { label: "Muy bajo", icon: "😢" },
-  2: { label: "Bajo", icon: "😕" },
-  3: { label: "Normal", icon: "😐" },
-  4: { label: "Bueno", icon: "🙂" },
-  5: { label: "Muy bueno", icon: "😊" }
+  1: { label: "Muy bajo", icon: Frown, color: "text-destructive" },
+  2: { label: "Bajo", icon: Frown, color: "text-warning" },
+  3: { label: "Normal", icon: Meh, color: "text-muted-foreground" },
+  4: { label: "Bueno", icon: Smile, color: "text-success" },
+  5: { label: "Muy bueno", icon: SmilePlus, color: "text-success" }
 }
 
 export function MoodBadge({ value, showLabel = false }: MoodBadgeProps) {
   const roundedValue = Math.round(value) as 1 | 2 | 3 | 4 | 5
   const config = moodConfig[roundedValue] || moodConfig[3]
+  const IconComponent = config.icon
 
   return (
-    <span className="inline-flex items-center gap-1 text-sm">
-      <span>{config.icon}</span>
-      {showLabel && <span className="text-muted-foreground">{config.label}</span>}
+    <span className={cn("inline-flex items-center gap-1", config.color)}>
+      <IconComponent className="h-4 w-4" />
+      {showLabel && <span className="text-xs text-muted-foreground">{config.label}</span>}
     </span>
   )
 }

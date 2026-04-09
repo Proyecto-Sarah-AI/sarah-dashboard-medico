@@ -3,9 +3,16 @@
 import { KPICard } from "./kpi-card"
 import { PatientsTable } from "./patients-table"
 import { PatientDetail } from "./patient-detail"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { patients, aggregateMetrics } from "@/lib/mock-data"
 import type { Patient } from "@/lib/mock-data"
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { 
   Users, 
   TrendingDown, 
@@ -13,38 +20,20 @@ import {
   AlertTriangle, 
   Stethoscope,
   Heart,
-  Brain
+  Brain,
+  Calendar,
+  ShieldAlert
 } from "lucide-react"
 import { useState } from "react"
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  Cell
-} from "recharts"
 
 export function OverviewSection() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+  const [timePeriod, setTimePeriod] = useState("30")
+  const [treatmentType, setTreatmentType] = useState("obesity")
   const metrics = aggregateMetrics()
 
-  const riskDistribution = [
-    { name: "Muy bajo", value: patients.filter(p => p.abandonmentRisk === 1).length, color: "hsl(var(--success))" },
-    { name: "Bajo", value: patients.filter(p => p.abandonmentRisk === 2).length, color: "hsl(var(--chart-2))" },
-    { name: "Moderado", value: patients.filter(p => p.abandonmentRisk === 3).length, color: "hsl(var(--warning))" },
-    { name: "Alto", value: patients.filter(p => p.abandonmentRisk === 4).length, color: "hsl(var(--chart-4))" },
-    { name: "Crítico", value: patients.filter(p => p.abandonmentRisk === 5).length, color: "hsl(var(--destructive))" },
-  ]
-
-  const bmiCategories = [
-    { name: "IMC 30-32", value: patients.filter(p => p.bmi >= 30 && p.bmi < 32).length },
-    { name: "IMC 32-35", value: patients.filter(p => p.bmi >= 32 && p.bmi < 35).length },
-    { name: "IMC 35-38", value: patients.filter(p => p.bmi >= 35 && p.bmi < 38).length },
-    { name: "IMC 38+", value: patients.filter(p => p.bmi >= 38).length },
-  ]
+  const highAbandonmentRisk = patients.filter(p => p.abandonmentRisk >= 4).length
+  const highTreatmentRisk = patients.filter(p => p.treatmentRisk >= 4).length
 
   if (selectedPatient) {
     return (
@@ -59,16 +48,51 @@ export function OverviewSection() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard de Obesidad</h1>
-        <p className="text-sm text-muted-foreground">
-          Monitoreo de pacientes con tratamiento para obesidad
-        </p>
+      {/* Page Header with Filters */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard de Obesidad</h1>
+          <p className="text-sm text-muted-foreground">
+            Monitoreo de pacientes con tratamiento para obesidad
+          </p>
+        </div>
+        
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Select value={timePeriod} onValueChange={setTimePeriod}>
+              <SelectTrigger className="w-[160px] bg-card">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">Últimos 7 días</SelectItem>
+                <SelectItem value="14">Últimos 14 días</SelectItem>
+                <SelectItem value="30">Últimos 30 días</SelectItem>
+                <SelectItem value="90">Últimos 90 días</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Activity className="h-4 w-4 text-muted-foreground" />
+            <Select value={treatmentType} onValueChange={setTreatmentType}>
+              <SelectTrigger className="w-[160px] bg-card">
+                <SelectValue placeholder="Tratamiento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="obesity">Obesidad</SelectItem>
+                <SelectItem value="diabetes">Diabetes</SelectItem>
+                <SelectItem value="hypertension">Hipertensión</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <KPICard
           title="Pacientes"
           value={metrics.totalPatients}
@@ -91,11 +115,9 @@ export function OverviewSection() {
           invertTrendColor
         />
         <KPICard
-          title="Pacientes Críticos"
-          value={metrics.criticalPatients}
-          subtitle="Requieren atención"
-          icon={<AlertTriangle className="h-4 w-4" />}
-          variant={metrics.criticalPatients > 0 ? "danger" : "default"}
+          title="Motivación Prom."
+          value={`${metrics.avgMotivation}/5`}
+          icon={<Brain className="h-4 w-4" />}
         />
         <KPICard
           title="Síntomas Totales"
@@ -107,91 +129,50 @@ export function OverviewSection() {
           value={`${metrics.avgMood}/5`}
           icon={<Heart className="h-4 w-4" />}
         />
-        <KPICard
-          title="Motivación Prom."
-          value={`${metrics.avgMotivation}/5`}
-          icon={<Brain className="h-4 w-4" />}
-        />
       </div>
 
-      {/* Charts Row */}
+      {/* Alert/Risk Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Risk Distribution */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-foreground">
-              Distribución de Riesgo de Abandono
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={riskDistribution} layout="vertical" margin={{ top: 5, right: 20, left: 60, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={true} vertical={false} />
-                  <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis 
-                    dataKey="name" 
-                    type="category" 
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} 
-                    axisLine={false} 
-                    tickLine={false}
-                    width={55}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      color: "hsl(var(--foreground))"
-                    }}
-                    formatter={(value: number) => [`${value} pacientes`, "Cantidad"]}
-                  />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                    {riskDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+        <Card className="bg-card border-destructive/30 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-destructive/10">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-muted-foreground">Riesgo de Abandono Alto</p>
+                <p className="text-3xl font-bold text-foreground mt-1">{highAbandonmentRisk}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {highAbandonmentRisk === 1 ? "paciente en riesgo" : "pacientes en riesgo"}
+                </p>
+              </div>
+              {highAbandonmentRisk > 0 && (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-destructive text-destructive-foreground">
+                  Atención
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* BMI Categories */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-foreground">
-              Distribución por IMC
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={bmiCategories} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} 
-                    axisLine={{ stroke: "hsl(var(--border))" }} 
-                    tickLine={false}
-                  />
-                  <YAxis 
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} 
-                    axisLine={false} 
-                    tickLine={false}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      color: "hsl(var(--foreground))"
-                    }}
-                    formatter={(value: number) => [`${value} pacientes`, "Cantidad"]}
-                  />
-                  <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+        <Card className="bg-card border-warning/30 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-warning/10">
+                <ShieldAlert className="h-6 w-6 text-warning" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-muted-foreground">Riesgo de Tratamiento Alto</p>
+                <p className="text-3xl font-bold text-foreground mt-1">{highTreatmentRisk}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {highTreatmentRisk === 1 ? "paciente con complicaciones" : "pacientes con complicaciones"}
+                </p>
+              </div>
+              {highTreatmentRisk > 0 && (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-warning text-warning-foreground">
+                  Revisar
+                </span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -199,7 +180,7 @@ export function OverviewSection() {
 
       {/* Patients Table */}
       <div>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col gap-1 mb-4 md:flex-row md:items-center md:justify-between">
           <h2 className="text-lg font-semibold text-foreground">Lista de Pacientes</h2>
           <p className="text-sm text-muted-foreground">
             Haz clic en un paciente para ver detalles
