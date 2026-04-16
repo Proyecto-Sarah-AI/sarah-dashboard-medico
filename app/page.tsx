@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { OverviewSection } from "@/components/dashboard/overview-section"
@@ -13,14 +13,12 @@ import {
   Menu,
   Heart,
   Search,
-  Activity
+  Activity,
+  Loader2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-
-
-export const dynamic = "force-dynamic"
 
 // Patients Section with Search
 function PatientsSection({ 
@@ -96,7 +94,7 @@ const treatmentLabels: Record<string, string> = {
   all: "Todos los tratamientos"
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -219,5 +217,26 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+// Loading fallback component
+function DashboardLoading() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Cargando dashboard...</p>
+      </div>
+    </div>
+  )
+}
+
+// Main exported component with Suspense boundary
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardLoading />}>
+      <DashboardContent />
+    </Suspense>
   )
 }
