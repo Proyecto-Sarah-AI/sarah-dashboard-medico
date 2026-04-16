@@ -361,6 +361,13 @@ export const symptoms: SymptomReport[] = [
 export const getPatientSymptoms = (patientId: string) => 
   symptoms.filter(s => s.patientId === patientId)
 
+export interface ChatMessage {
+  id: string
+  sender: "patient" | "sarah"
+  content: string
+  timestamp: string
+}
+
 export interface PatientInteraction {
   id: string
   patientId: string
@@ -368,6 +375,8 @@ export interface PatientInteraction {
   date: string
   type: "medication_report" | "symptom_report" | "appointment" | "chat" | "weight_log" | "mood_log"
   result: "completed" | "skipped" | "error" | "pending"
+  chatMessages?: ChatMessage[]
+  isReviewed?: boolean
 }
 
 const interactionTypes = {
@@ -387,28 +396,349 @@ const interactionResults = {
 }
 
 export const patientInteractions: PatientInteraction[] = [
-  { id: "I001", patientId: "P001", summary: "Tomé mi dosis de la mañana sin problemas", date: "2024-01-15", type: "medication_report", result: "completed" },
-  { id: "I002", patientId: "P001", summary: "Me siento con más energía hoy", date: "2024-01-15", type: "mood_log", result: "completed" },
-  { id: "I003", patientId: "P001", summary: "Registré mi peso: 92kg", date: "2024-01-14", type: "weight_log", result: "completed" },
-  { id: "I004", patientId: "P001", summary: "Consulta de seguimiento con Dr. Pérez", date: "2024-01-12", type: "appointment", result: "completed" },
-  { id: "I005", patientId: "P002", summary: "Olvidé tomar la dosis de la noche", date: "2024-01-10", type: "medication_report", result: "skipped" },
-  { id: "I006", patientId: "P002", summary: "Reporté mareos después del almuerzo", date: "2024-01-10", type: "symptom_report", result: "completed" },
-  { id: "I007", patientId: "P002", summary: "No pude asistir a la cita", date: "2024-01-08", type: "appointment", result: "skipped" },
-  { id: "I008", patientId: "P002", summary: "Pregunté sobre efectos secundarios", date: "2024-01-07", type: "chat", result: "completed" },
-  { id: "I009", patientId: "P003", summary: "Completé mi rutina de ejercicios", date: "2024-01-15", type: "chat", result: "completed" },
-  { id: "I010", patientId: "P003", summary: "Peso actual: 78kg, muy contenta", date: "2024-01-15", type: "weight_log", result: "completed" },
-  { id: "I011", patientId: "P003", summary: "Todas las dosis completadas esta semana", date: "2024-01-14", type: "medication_report", result: "completed" },
-  { id: "I012", patientId: "P003", summary: "Cita de control nutricional", date: "2024-01-13", type: "appointment", result: "completed" },
-  { id: "I013", patientId: "P004", summary: "Tuve náuseas pero tomé el medicamento", date: "2024-01-14", type: "medication_report", result: "completed" },
-  { id: "I014", patientId: "P004", summary: "Error al sincronizar datos de peso", date: "2024-01-13", type: "weight_log", result: "error" },
-  { id: "I015", patientId: "P004", summary: "Reporté fatiga durante el día", date: "2024-01-12", type: "symptom_report", result: "completed" },
-  { id: "I016", patientId: "P005", summary: "No me sentí bien para registrar", date: "2024-01-05", type: "medication_report", result: "skipped" },
-  { id: "I017", patientId: "P005", summary: "Vómitos severos reportados", date: "2024-01-04", type: "symptom_report", result: "completed" },
-  { id: "I018", patientId: "P005", summary: "Cancelé mi cita por malestar", date: "2024-01-03", type: "appointment", result: "skipped" },
-  { id: "I019", patientId: "P005", summary: "Solicité hablar con un médico", date: "2024-01-02", type: "chat", result: "pending" },
-  { id: "I020", patientId: "P006", summary: "Todo bien con la medicación", date: "2024-01-15", type: "medication_report", result: "completed" },
-  { id: "I021", patientId: "P006", summary: "Mi ánimo está muy positivo", date: "2024-01-15", type: "mood_log", result: "completed" },
-  { id: "I022", patientId: "P006", summary: "Registré 95kg, sigo bajando", date: "2024-01-14", type: "weight_log", result: "completed" },
+  { 
+    id: "I001", 
+    patientId: "P001", 
+    summary: "Tomé mi dosis de la mañana sin problemas", 
+    date: "2024-01-15", 
+    type: "medication_report", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM001", sender: "sarah", content: "Buenos dias Maria! Como te fue con tu medicamento de hoy?", timestamp: "2024-01-15T08:00:00" },
+      { id: "CM002", sender: "patient", content: "Hola Sarah! Muy bien, lo tome a las 7am como siempre", timestamp: "2024-01-15T08:02:00" },
+      { id: "CM003", sender: "sarah", content: "Excelente! Alguna molestia o efecto secundario?", timestamp: "2024-01-15T08:02:30" },
+      { id: "CM004", sender: "patient", content: "No, todo normal. Me siento bien", timestamp: "2024-01-15T08:03:00" },
+      { id: "CM005", sender: "sarah", content: "Me alegra escuchar eso! Recuerda tomar tu segunda dosis a las 8pm. Cualquier cosa aqui estoy.", timestamp: "2024-01-15T08:03:30" }
+    ]
+  },
+  { 
+    id: "I002", 
+    patientId: "P001", 
+    summary: "Me siento con más energía hoy", 
+    date: "2024-01-15", 
+    type: "mood_log", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM006", sender: "sarah", content: "Como te sientes hoy Maria?", timestamp: "2024-01-15T10:00:00" },
+      { id: "CM007", sender: "patient", content: "Muy bien! Tengo mucha mas energia que antes", timestamp: "2024-01-15T10:01:00" },
+      { id: "CM008", sender: "sarah", content: "Que bueno! Es normal sentir mas energia conforme avanza el tratamiento. Sigue asi!", timestamp: "2024-01-15T10:01:30" }
+    ]
+  },
+  { 
+    id: "I003", 
+    patientId: "P001", 
+    summary: "Registré mi peso: 92kg", 
+    date: "2024-01-14", 
+    type: "weight_log", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM009", sender: "sarah", content: "Hola Maria! Es momento de registrar tu peso semanal.", timestamp: "2024-01-14T09:00:00" },
+      { id: "CM010", sender: "patient", content: "Claro! Hoy estoy en 92kg", timestamp: "2024-01-14T09:05:00" },
+      { id: "CM011", sender: "sarah", content: "Perfecto! Eso es una reduccion de 13kg desde que empezaste. Vas muy bien!", timestamp: "2024-01-14T09:05:30" },
+      { id: "CM012", sender: "patient", content: "Si! Estoy muy contenta con el progreso", timestamp: "2024-01-14T09:06:00" }
+    ]
+  },
+  { 
+    id: "I004", 
+    patientId: "P001", 
+    summary: "Consulta de seguimiento con Dr. Pérez", 
+    date: "2024-01-12", 
+    type: "appointment", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM013", sender: "sarah", content: "Recuerda que hoy tienes tu cita de seguimiento con el Dr. Perez a las 10:00 AM.", timestamp: "2024-01-12T07:00:00" },
+      { id: "CM014", sender: "patient", content: "Si, ya estoy lista!", timestamp: "2024-01-12T07:30:00" },
+      { id: "CM015", sender: "sarah", content: "Como te fue en la consulta?", timestamp: "2024-01-12T12:00:00" },
+      { id: "CM016", sender: "patient", content: "Muy bien! El doctor esta contento con mi progreso", timestamp: "2024-01-12T12:15:00" },
+      { id: "CM017", sender: "sarah", content: "Me alegra mucho! Registrare que asististe a tu cita.", timestamp: "2024-01-12T12:15:30" }
+    ]
+  },
+  { 
+    id: "I005", 
+    patientId: "P002", 
+    summary: "Olvidé tomar la dosis de la noche", 
+    date: "2024-01-10", 
+    type: "medication_report", 
+    result: "skipped",
+    isReviewed: false,
+    chatMessages: [
+      { id: "CM018", sender: "sarah", content: "Hola Carlos! Recuerda tomar tu medicamento de la noche.", timestamp: "2024-01-10T20:00:00" },
+      { id: "CM019", sender: "sarah", content: "Carlos, aun no registro tu dosis de la noche. Esta todo bien?", timestamp: "2024-01-10T21:00:00" },
+      { id: "CM020", sender: "patient", content: "Perdon Sarah, lo olvide completamente. Ya es muy tarde?", timestamp: "2024-01-10T22:30:00" },
+      { id: "CM021", sender: "sarah", content: "Entiendo que a veces pasa. Por la hora, es mejor esperar a manana y retomar tu horario normal. No tomes dosis doble.", timestamp: "2024-01-10T22:31:00" },
+      { id: "CM022", sender: "patient", content: "Ok, gracias por el consejo", timestamp: "2024-01-10T22:32:00" }
+    ]
+  },
+  { 
+    id: "I006", 
+    patientId: "P002", 
+    summary: "Reporté mareos después del almuerzo", 
+    date: "2024-01-10", 
+    type: "symptom_report", 
+    result: "completed",
+    isReviewed: false,
+    chatMessages: [
+      { id: "CM023", sender: "patient", content: "Sarah, me siento mareado despues de comer", timestamp: "2024-01-10T14:00:00" },
+      { id: "CM024", sender: "sarah", content: "Lamento escuchar eso Carlos. Cuanto tiempo llevas con los mareos?", timestamp: "2024-01-10T14:01:00" },
+      { id: "CM025", sender: "patient", content: "Como una hora ya", timestamp: "2024-01-10T14:02:00" },
+      { id: "CM026", sender: "sarah", content: "Te recomiendo descansar un poco y tomar agua. Los mareos pueden ser un efecto secundario. Si persisten mas de 2 horas o empeoran, contacta al Dr. Perez.", timestamp: "2024-01-10T14:02:30" },
+      { id: "CM027", sender: "patient", content: "Ok, voy a recostarme un rato", timestamp: "2024-01-10T14:03:00" },
+      { id: "CM028", sender: "sarah", content: "Perfecto. Te escribo mas tarde para ver como sigues.", timestamp: "2024-01-10T14:03:30" }
+    ]
+  },
+  { 
+    id: "I007", 
+    patientId: "P002", 
+    summary: "No pude asistir a la cita", 
+    date: "2024-01-08", 
+    type: "appointment", 
+    result: "skipped",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM029", sender: "sarah", content: "Carlos, recuerda tu cita de hoy a las 3:00 PM.", timestamp: "2024-01-08T10:00:00" },
+      { id: "CM030", sender: "patient", content: "Sarah, no voy a poder ir. Surgio algo en el trabajo", timestamp: "2024-01-08T14:00:00" },
+      { id: "CM031", sender: "sarah", content: "Entiendo. Es importante reprogramar lo antes posible. Quieres que te ayude a buscar disponibilidad?", timestamp: "2024-01-08T14:01:00" },
+      { id: "CM032", sender: "patient", content: "Si, por favor. La proxima semana si puedo", timestamp: "2024-01-08T14:02:00" }
+    ]
+  },
+  { 
+    id: "I008", 
+    patientId: "P002", 
+    summary: "Pregunté sobre efectos secundarios", 
+    date: "2024-01-07", 
+    type: "chat", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM033", sender: "patient", content: "Hola Sarah, tengo una pregunta sobre el medicamento", timestamp: "2024-01-07T15:00:00" },
+      { id: "CM034", sender: "sarah", content: "Claro Carlos, dime en que puedo ayudarte", timestamp: "2024-01-07T15:00:30" },
+      { id: "CM035", sender: "patient", content: "He tenido algunos mareos y me pregunto si es normal", timestamp: "2024-01-07T15:01:00" },
+      { id: "CM036", sender: "sarah", content: "Los mareos son un efecto secundario comun al inicio del tratamiento. Suelen mejorar con el tiempo. Algunos consejos: levantate despacio, mantente hidratado, y evita movimientos bruscos.", timestamp: "2024-01-07T15:02:00" },
+      { id: "CM037", sender: "patient", content: "Cuanto tiempo suelen durar?", timestamp: "2024-01-07T15:03:00" },
+      { id: "CM038", sender: "sarah", content: "Generalmente mejoran en 2-4 semanas. Si son muy intensos o no mejoran, el medico puede ajustar la dosis. Quieres que lo anote para tu proxima cita?", timestamp: "2024-01-07T15:03:30" },
+      { id: "CM039", sender: "patient", content: "Si, por favor. Gracias por la informacion", timestamp: "2024-01-07T15:04:00" }
+    ]
+  },
+  { 
+    id: "I009", 
+    patientId: "P003", 
+    summary: "Completé mi rutina de ejercicios", 
+    date: "2024-01-15", 
+    type: "chat", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM040", sender: "patient", content: "Sarah! Acabo de terminar mi rutina de ejercicio!", timestamp: "2024-01-15T07:30:00" },
+      { id: "CM041", sender: "sarah", content: "Felicidades Ana! Que hiciste hoy?", timestamp: "2024-01-15T07:31:00" },
+      { id: "CM042", sender: "patient", content: "30 minutos de caminata rapida y 15 de ejercicios de fuerza", timestamp: "2024-01-15T07:32:00" },
+      { id: "CM043", sender: "sarah", content: "Excelente! Tu consistencia es admirable. Llevas 16 dias seguidos de ejercicio!", timestamp: "2024-01-15T07:32:30" }
+    ]
+  },
+  { 
+    id: "I010", 
+    patientId: "P003", 
+    summary: "Peso actual: 78kg, muy contenta", 
+    date: "2024-01-15", 
+    type: "weight_log", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM044", sender: "sarah", content: "Buenos dias Ana! Listo para el registro de peso semanal?", timestamp: "2024-01-15T08:00:00" },
+      { id: "CM045", sender: "patient", content: "Si! Estoy en 78kg!!", timestamp: "2024-01-15T08:05:00" },
+      { id: "CM046", sender: "sarah", content: "WOW! Eso es increible Ana! Has perdido 17kg desde el inicio. Tu esfuerzo esta dando resultados!", timestamp: "2024-01-15T08:05:30" },
+      { id: "CM047", sender: "patient", content: "Estoy super feliz! Gracias por todo el apoyo", timestamp: "2024-01-15T08:06:00" }
+    ]
+  },
+  { 
+    id: "I011", 
+    patientId: "P003", 
+    summary: "Todas las dosis completadas esta semana", 
+    date: "2024-01-14", 
+    type: "medication_report", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM048", sender: "sarah", content: "Ana, completaste todas tus dosis esta semana! Perfecta adherencia.", timestamp: "2024-01-14T20:00:00" },
+      { id: "CM049", sender: "patient", content: "Si! No falle ninguna", timestamp: "2024-01-14T20:01:00" },
+      { id: "CM050", sender: "sarah", content: "Tu compromiso es ejemplar. Sigue asi!", timestamp: "2024-01-14T20:01:30" }
+    ]
+  },
+  { 
+    id: "I012", 
+    patientId: "P003", 
+    summary: "Cita de control nutricional", 
+    date: "2024-01-13", 
+    type: "appointment", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM051", sender: "sarah", content: "Hola Ana! Recuerda tu cita de nutricion hoy a las 11:00 AM.", timestamp: "2024-01-13T08:00:00" },
+      { id: "CM052", sender: "patient", content: "Ya estoy lista! Tengo varias preguntas para la nutriologa", timestamp: "2024-01-13T08:30:00" },
+      { id: "CM053", sender: "sarah", content: "Excelente! Como te fue?", timestamp: "2024-01-13T13:00:00" },
+      { id: "CM054", sender: "patient", content: "Muy bien! Me dieron un nuevo plan alimenticio para esta etapa", timestamp: "2024-01-13T13:30:00" }
+    ]
+  },
+  { 
+    id: "I013", 
+    patientId: "P004", 
+    summary: "Tuve náuseas pero tomé el medicamento", 
+    date: "2024-01-14", 
+    type: "medication_report", 
+    result: "completed",
+    isReviewed: false,
+    chatMessages: [
+      { id: "CM055", sender: "sarah", content: "Roberto, como te fue con la dosis de hoy?", timestamp: "2024-01-14T09:00:00" },
+      { id: "CM056", sender: "patient", content: "Lo tome pero me dieron nauseas", timestamp: "2024-01-14T09:30:00" },
+      { id: "CM057", sender: "sarah", content: "Lamento escuchar eso. Las nauseas pueden aliviarse tomando el medicamento con algo de comida. Lo tomaste en ayunas?", timestamp: "2024-01-14T09:31:00" },
+      { id: "CM058", sender: "patient", content: "Si, lo tome antes del desayuno", timestamp: "2024-01-14T09:32:00" },
+      { id: "CM059", sender: "sarah", content: "Te recomiendo tomarlo durante o despues de una comida ligera. Eso suele ayudar mucho.", timestamp: "2024-01-14T09:32:30" }
+    ]
+  },
+  { 
+    id: "I014", 
+    patientId: "P004", 
+    summary: "Error al sincronizar datos de peso", 
+    date: "2024-01-13", 
+    type: "weight_log", 
+    result: "error",
+    isReviewed: false,
+    chatMessages: [
+      { id: "CM060", sender: "sarah", content: "Roberto, es momento de registrar tu peso.", timestamp: "2024-01-13T09:00:00" },
+      { id: "CM061", sender: "patient", content: "Hoy estoy en 102kg", timestamp: "2024-01-13T09:15:00" },
+      { id: "CM062", sender: "sarah", content: "Hubo un problema al guardar tu registro. Puedes intentarlo de nuevo?", timestamp: "2024-01-13T09:15:30" },
+      { id: "CM063", sender: "patient", content: "Ya lo intente 3 veces y no funciona", timestamp: "2024-01-13T09:20:00" },
+      { id: "CM064", sender: "sarah", content: "Disculpa las molestias. He reportado el problema tecnico. Tu peso ha sido anotado manualmente.", timestamp: "2024-01-13T09:21:00" }
+    ]
+  },
+  { 
+    id: "I015", 
+    patientId: "P004", 
+    summary: "Reporté fatiga durante el día", 
+    date: "2024-01-12", 
+    type: "symptom_report", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM065", sender: "patient", content: "Me siento muy cansado hoy", timestamp: "2024-01-12T16:00:00" },
+      { id: "CM066", sender: "sarah", content: "Cuanto tiempo llevas sintiendote asi?", timestamp: "2024-01-12T16:01:00" },
+      { id: "CM067", sender: "patient", content: "Desde la manana, pero empeoro despues del almuerzo", timestamp: "2024-01-12T16:02:00" },
+      { id: "CM068", sender: "sarah", content: "La fatiga puede ser un efecto secundario. Dormiste bien anoche?", timestamp: "2024-01-12T16:02:30" },
+      { id: "CM069", sender: "patient", content: "No muy bien, me desperte varias veces", timestamp: "2024-01-12T16:03:00" },
+      { id: "CM070", sender: "sarah", content: "El descanso es importante para tu tratamiento. Te envio algunos consejos para mejorar el sueno.", timestamp: "2024-01-12T16:03:30" }
+    ]
+  },
+  { 
+    id: "I016", 
+    patientId: "P005", 
+    summary: "No me sentí bien para registrar", 
+    date: "2024-01-05", 
+    type: "medication_report", 
+    result: "skipped",
+    isReviewed: false,
+    chatMessages: [
+      { id: "CM071", sender: "sarah", content: "Laura, recuerda tomar tu medicamento.", timestamp: "2024-01-05T08:00:00" },
+      { id: "CM072", sender: "sarah", content: "Laura, no he recibido tu registro. Esta todo bien?", timestamp: "2024-01-05T12:00:00" },
+      { id: "CM073", sender: "patient", content: "No me siento bien para nada", timestamp: "2024-01-05T14:00:00" },
+      { id: "CM074", sender: "sarah", content: "Que sientes exactamente? Estoy aqui para ayudarte.", timestamp: "2024-01-05T14:01:00" },
+      { id: "CM075", sender: "patient", content: "Nauseas, me duele la cabeza, no tengo ganas de nada", timestamp: "2024-01-05T14:05:00" },
+      { id: "CM076", sender: "sarah", content: "Entiendo. Es importante que hables con el medico sobre estos sintomas. Puedo ayudarte a contactarlo?", timestamp: "2024-01-05T14:05:30" }
+    ]
+  },
+  { 
+    id: "I017", 
+    patientId: "P005", 
+    summary: "Vómitos severos reportados", 
+    date: "2024-01-04", 
+    type: "symptom_report", 
+    result: "completed",
+    isReviewed: false,
+    chatMessages: [
+      { id: "CM077", sender: "patient", content: "Sarah no puedo mas, he vomitado 3 veces hoy", timestamp: "2024-01-04T11:00:00" },
+      { id: "CM078", sender: "sarah", content: "Lo siento mucho Laura. Esto es importante. Has podido tomar liquidos?", timestamp: "2024-01-04T11:01:00" },
+      { id: "CM079", sender: "patient", content: "Muy poco, todo me da asco", timestamp: "2024-01-04T11:02:00" },
+      { id: "CM080", sender: "sarah", content: "Necesitas hablar con el medico hoy. Te recomiendo ir a urgencias si los vomitos continuan. Quieres que contacte a tu red de apoyo?", timestamp: "2024-01-04T11:02:30" },
+      { id: "CM081", sender: "patient", content: "Si, avisa a mis papas por favor", timestamp: "2024-01-04T11:03:00" }
+    ]
+  },
+  { 
+    id: "I018", 
+    patientId: "P005", 
+    summary: "Cancelé mi cita por malestar", 
+    date: "2024-01-03", 
+    type: "appointment", 
+    result: "skipped",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM082", sender: "sarah", content: "Laura, recuerda tu cita de hoy a las 4:00 PM.", timestamp: "2024-01-03T10:00:00" },
+      { id: "CM083", sender: "patient", content: "No voy a poder ir, me siento muy mal", timestamp: "2024-01-03T12:00:00" },
+      { id: "CM084", sender: "sarah", content: "Entiendo Laura. Es importante reprogramar pronto dado como te has sentido. El medico necesita evaluarte.", timestamp: "2024-01-03T12:01:00" },
+      { id: "CM085", sender: "patient", content: "Ok, pero no se si pueda pronto", timestamp: "2024-01-03T12:05:00" }
+    ]
+  },
+  { 
+    id: "I019", 
+    patientId: "P005", 
+    summary: "Solicité hablar con un médico", 
+    date: "2024-01-02", 
+    type: "chat", 
+    result: "pending",
+    isReviewed: false,
+    chatMessages: [
+      { id: "CM086", sender: "patient", content: "Necesito hablar con el doctor urgente", timestamp: "2024-01-02T09:00:00" },
+      { id: "CM087", sender: "sarah", content: "Entiendo Laura. Que esta pasando?", timestamp: "2024-01-02T09:01:00" },
+      { id: "CM088", sender: "patient", content: "No aguanto los efectos del medicamento. Quiero dejarlo", timestamp: "2024-01-02T09:02:00" },
+      { id: "CM089", sender: "sarah", content: "Comprendo tu frustracion. Es muy importante que no dejes el medicamento sin supervision medica. Voy a solicitar una llamada urgente con el Dr. Perez.", timestamp: "2024-01-02T09:02:30" },
+      { id: "CM090", sender: "patient", content: "Gracias, necesito que me llame hoy", timestamp: "2024-01-02T09:03:00" },
+      { id: "CM091", sender: "sarah", content: "He enviado la solicitud marcada como urgente. El equipo medico te contactara lo antes posible.", timestamp: "2024-01-02T09:03:30" }
+    ]
+  },
+  { 
+    id: "I020", 
+    patientId: "P006", 
+    summary: "Todo bien con la medicación", 
+    date: "2024-01-15", 
+    type: "medication_report", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM092", sender: "sarah", content: "Buenos dias Miguel! Como te fue con tu medicamento?", timestamp: "2024-01-15T08:30:00" },
+      { id: "CM093", sender: "patient", content: "Todo perfecto, sin problemas", timestamp: "2024-01-15T08:35:00" },
+      { id: "CM094", sender: "sarah", content: "Excelente! Tu consistencia es admirable.", timestamp: "2024-01-15T08:35:30" }
+    ]
+  },
+  { 
+    id: "I021", 
+    patientId: "P006", 
+    summary: "Mi ánimo está muy positivo", 
+    date: "2024-01-15", 
+    type: "mood_log", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM095", sender: "sarah", content: "Miguel, como te sientes hoy emocionalmente?", timestamp: "2024-01-15T12:00:00" },
+      { id: "CM096", sender: "patient", content: "Muy bien! Me siento positivo y motivado", timestamp: "2024-01-15T12:05:00" },
+      { id: "CM097", sender: "sarah", content: "Me alegra mucho escuchar eso! Tu actitud positiva es clave en tu progreso.", timestamp: "2024-01-15T12:05:30" }
+    ]
+  },
+  { 
+    id: "I022", 
+    patientId: "P006", 
+    summary: "Registré 95kg, sigo bajando", 
+    date: "2024-01-14", 
+    type: "weight_log", 
+    result: "completed",
+    isReviewed: true,
+    chatMessages: [
+      { id: "CM098", sender: "sarah", content: "Hola Miguel! Listo para registrar tu peso?", timestamp: "2024-01-14T09:00:00" },
+      { id: "CM099", sender: "patient", content: "Si! Estoy en 95kg", timestamp: "2024-01-14T09:10:00" },
+      { id: "CM100", sender: "sarah", content: "Fantastico! Has bajado 15kg desde el inicio. Tu progreso es excelente!", timestamp: "2024-01-14T09:10:30" },
+      { id: "CM101", sender: "patient", content: "Gracias! Me siento cada vez mejor", timestamp: "2024-01-14T09:11:00" }
+    ]
+  },
 ]
 
 export const getPatientInteractions = (patientId: string): PatientInteraction[] => {
@@ -419,6 +749,15 @@ export const getPatientInteractions = (patientId: string): PatientInteraction[] 
 
 export const getInteractionTypeLabel = (type: PatientInteraction["type"]) => interactionTypes[type]
 export const getInteractionResultLabel = (result: PatientInteraction["result"]) => interactionResults[result]
+
+export const markInteractionAsReviewed = (interactionId: string): boolean => {
+  const interaction = patientInteractions.find(i => i.id === interactionId)
+  if (interaction) {
+    interaction.isReviewed = true
+    return true
+  }
+  return false
+}
 
 // Patient Intent Types
 export type PatientIntentType = 
