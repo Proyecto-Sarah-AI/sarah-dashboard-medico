@@ -1,10 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
 import { AlertBadge, MoodBadge } from "./alert-badge"
 import { WeightChart } from "./weight-chart"
 import { AdherenceChart } from "./adherence-chart"
@@ -38,7 +42,7 @@ import {
 import { 
   Scale, 
   Ruler, 
-  Calendar, 
+  Calendar as CalendarIcon, 
   MessageSquare, 
   TrendingDown,
   Activity,
@@ -48,9 +52,14 @@ import {
   Clock,
   AlertTriangle,
   ShieldAlert,
-  CalendarClock
+  CalendarClock,
+  User,
+  BarChart3
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import type { DateRange } from "react-day-picker"
 
 interface PatientDetailProps {
   patient: Patient
@@ -58,6 +67,11 @@ interface PatientDetailProps {
 }
 
 export function PatientDetail({ patient, onClose }: PatientDetailProps) {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+    to: new Date()
+  })
+
   const weightHistory = getWeightHistory(patient.id)
   const adherenceHistory = getAdherenceHistory(patient.id)
   const moodHistory = getMoodHistory(patient.id)
@@ -95,7 +109,7 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
       {/* Header */}
       <Card className="bg-card border-border">
         <CardContent className="p-4">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-primary/30">
                 <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
@@ -105,326 +119,409 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
               <div>
                 <h2 className="text-xl font-bold text-foreground">{patient.name}</h2>
                 <p className="text-sm text-muted-foreground">
-                  {patient.age} años · {patient.gender === "M" ? "Masculino" : "Femenino"} · ID: {patient.id}
+                  {patient.age} anos · {patient.gender === "M" ? "Masculino" : "Femenino"} · ID: {patient.id}
                 </p>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <Badge variant="outline" className="text-xs">
-                    {patient.treatmentDays} días en tratamiento
+                    {patient.treatmentDays} dias en tratamiento
                   </Badge>
                   <Badge variant="outline" className="text-xs flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    Última actividad: {patient.lastInteraction}
+                    Ultima actividad: {patient.lastInteraction}
                   </Badge>
                   {daysSinceLastActivity > 7 && (
                     <Badge variant="destructive" className="text-xs">
-                      {daysSinceLastActivity} días sin registrar
+                      {daysSinceLastActivity} dias sin registrar
                     </Badge>
                   )}
                 </div>
               </div>
             </div>
+            
+            {/* Date Range Selector */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2 text-sm">
+                  <CalendarIcon className="h-4 w-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "dd MMM", { locale: es })} - {format(dateRange.to, "dd MMM yyyy", { locale: es })}
+                      </>
+                    ) : (
+                      format(dateRange.from, "dd MMM yyyy", { locale: es })
+                    )
+                  ) : (
+                    "Seleccionar rango"
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={2}
+                />
+                <div className="p-3 border-t border-border flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => setDateRange({
+                      from: new Date(new Date().setDate(new Date().getDate() - 7)),
+                      to: new Date()
+                    })}
+                  >
+                    7 dias
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => setDateRange({
+                      from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+                      to: new Date()
+                    })}
+                  >
+                    30 dias
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => setDateRange({
+                      from: new Date(new Date().setMonth(new Date().getMonth() - 3)),
+                      to: new Date()
+                    })}
+                  >
+                    3 meses
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </CardContent>
       </Card>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="bg-card border-border">
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2">
-              <Scale className="h-4 w-4 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Peso actual</p>
-                <p className="text-lg font-bold text-foreground">{patient.weight} kg</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-chart-3" />
-              <div>
-                <p className="text-xs text-muted-foreground">IMC actual</p>
-                <p className="text-lg font-bold text-foreground">{patient.bmi.toFixed(1)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-success" />
-              <div>
-                <p className="text-xs text-muted-foreground">Cambio IMC</p>
-                <p className="text-lg font-bold text-success">{patient.bmiChange}%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardContent className="p-3">
-            <div className="flex items-center gap-2">
-              <Ruler className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Estatura</p>
-                <p className="text-lg font-bold text-foreground">{patient.height} m</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Tabs for Information vs Statistics */}
+      <Tabs defaultValue="info" className="w-full">
+        <TabsList className="w-full md:w-auto">
+          <TabsTrigger value="info" className="gap-2">
+            <User className="h-4 w-4" />
+            Informacion
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Estadisticas
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Risk Alerts & Factors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-warning" />
-              Niveles de Alerta
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Riesgo de Abandono</p>
-                <AlertBadge level={patient.abandonmentRisk} type="abandonment" size="md" />
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Riesgo de Tratamiento</p>
-                <AlertBadge level={patient.treatmentRisk} type="treatment" size="md" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-destructive" />
-              Factores de Riesgo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {patient.adherence < 70 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-destructive" />
-                  <span className="text-muted-foreground">Baja adherencia al tratamiento ({patient.adherence}%)</span>
+        {/* Information Tab */}
+        <TabsContent value="info" className="space-y-4 mt-4">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card className="bg-card border-border">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Peso actual</p>
+                    <p className="text-lg font-bold text-foreground">{patient.weight} kg</p>
+                  </div>
                 </div>
-              )}
-              {patient.appointmentRate < 70 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-warning" />
-                  <span className="text-muted-foreground">Tasa de asistencia baja ({patient.appointmentRate}%)</span>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-chart-3" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">IMC actual</p>
+                    <p className="text-lg font-bold text-foreground">{patient.bmi.toFixed(1)}</p>
+                  </div>
                 </div>
-              )}
-              {patient.mood <= 2 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-warning" />
-                  <span className="text-muted-foreground">Estado de ánimo bajo</span>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4 text-success" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Cambio IMC</p>
+                    <p className="text-lg font-bold text-success">{patient.bmiChange}%</p>
+                  </div>
                 </div>
-              )}
-              {patient.motivation <= 2 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-warning" />
-                  <span className="text-muted-foreground">Motivación baja</span>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  <Ruler className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Estatura</p>
+                    <p className="text-lg font-bold text-foreground">{patient.height} m</p>
+                  </div>
                 </div>
-              )}
-              {patient.symptomsCount >= 3 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-destructive" />
-                  <span className="text-muted-foreground">Múltiples síntomas reportados ({patient.symptomsCount})</span>
-                </div>
-              )}
-              {daysSinceLastActivity > 7 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-destructive" />
-                  <span className="text-muted-foreground">Sin actividad reciente ({daysSinceLastActivity} días)</span>
-                </div>
-              )}
-              {patient.adherence >= 70 && patient.appointmentRate >= 70 && patient.mood > 2 && patient.motivation > 2 && patient.symptomsCount < 3 && daysSinceLastActivity <= 7 && (
-                <div className="flex items-center gap-2 text-sm text-success">
-                  <span className="w-2 h-2 rounded-full bg-success" />
-                  <span>Sin factores de riesgo identificados</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Adherence & Appointments */}
-      <Card className="bg-card border-border">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-foreground">Adherencia y Asistencia</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Adherencia al tratamiento</span>
-              <span className="text-sm font-medium text-foreground">{patient.adherence}%</span>
-            </div>
-            <Progress value={patient.adherence} className="h-2 bg-muted" />
+              </CardContent>
+            </Card>
           </div>
-          <Separator className="bg-border" />
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="flex items-center justify-center gap-1 text-success">
-                <CalendarCheck className="h-4 w-4" />
-                <span className="text-lg font-bold">{patient.appointmentsAttended}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Asistidas</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-1 text-warning">
-                <CalendarX className="h-4 w-4" />
-                <span className="text-lg font-bold">{patient.cancelledEvents}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Canceladas</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-1 text-destructive">
-                <Calendar className="h-4 w-4" />
-                <span className="text-lg font-bold">{patient.missedEvents}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">No asistidas</p>
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Tasa de asistencia</span>
-              <span className="text-sm font-medium text-foreground">{patient.appointmentRate}%</span>
-            </div>
-            <Progress value={patient.appointmentRate} className="h-2 bg-muted" />
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Emotional State */}
-      <Card className="bg-card border-border">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-foreground">Estado Emocional</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <MoodBadge value={patient.mood} />
-              <div>
-                <p className="text-xs text-muted-foreground">Ánimo</p>
-                <p className="text-sm font-medium text-foreground">{patient.mood}/5</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <MoodBadge value={patient.motivation} />
-              <div>
-                <p className="text-xs text-muted-foreground">Motivación</p>
-                <p className="text-sm font-medium text-foreground">{patient.motivation}/5</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Clinical Record & Medication Plan */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ClinicalRecordCard 
-          record={clinicalRecord} 
-          patient={patient}
-          onImport={(externalId) => console.log("[v0] Import clinical record:", externalId)}
-          onRefresh={() => console.log("[v0] Refresh clinical record")}
-        />
-        <MedicationPlanCard 
-          plan={medicationPlan}
-          patientId={patient.id}
-          onUpdateMedication={(medId, updates) => console.log("Update medication:", medId, updates)}
-          onAddMedication={(med) => console.log("Add medication:", med)}
-          onDeleteMedication={(medId) => console.log("Delete medication:", medId)}
-          onUpdateNotes={(notes) => console.log("Update notes:", notes)}
-        />
-      </div>
-
-      {/* Messaging Panel */}
-      <MessagingPanel
-        patient={patient}
-        messages={patientMessages}
-        caregivers={caregivers}
-        onSendMessage={(msg) => console.log("[v0] Send message:", msg)}
-      />
-
-      {/* Interaction with Sarah & Medical Events */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-foreground">Interacción con Sarah</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-primary">
-                <MessageSquare className="h-5 w-5" />
-                <span className="text-2xl font-bold">{patient.messagesCount}</span>
-              </div>
-              <div>
-                <p className="text-sm text-foreground">mensajes totales</p>
-                <p className="text-xs text-muted-foreground">
-                  Última interacción: {patient.lastInteraction}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-              <CalendarClock className="h-4 w-4 text-muted-foreground" />
-              Frecuencia de Eventos Médicos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-6">
-              <div>
-                <span className="text-2xl font-bold text-foreground">{medicalEventFrequency.eventsPerWeek}</span>
-                <p className="text-xs text-muted-foreground">eventos/semana</p>
-              </div>
-              <Separator orientation="vertical" className="h-10" />
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-muted-foreground" />
-                  <span className="text-muted-foreground">Programados: {medicalEventFrequency.scheduledEvents}</span>
+          {/* Risk Alerts & Factors */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-warning" />
+                  Niveles de Alerta
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">Riesgo de Abandono</p>
+                    <AlertBadge level={patient.abandonmentRisk} type="abandonment" size="md" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">Riesgo de Tratamiento</p>
+                    <AlertBadge level={patient.treatmentRisk} type="treatment" size="md" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-success" />
-                  <span className="text-muted-foreground">Completados: {medicalEventFrequency.completedEvents}</span>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <ShieldAlert className="h-4 w-4 text-destructive" />
+                  Factores de Riesgo
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {patient.adherence < 70 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 rounded-full bg-destructive" />
+                      <span className="text-muted-foreground">Baja adherencia al tratamiento ({patient.adherence}%)</span>
+                    </div>
+                  )}
+                  {patient.appointmentRate < 70 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 rounded-full bg-warning" />
+                      <span className="text-muted-foreground">Tasa de asistencia baja ({patient.appointmentRate}%)</span>
+                    </div>
+                  )}
+                  {patient.mood <= 2 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 rounded-full bg-warning" />
+                      <span className="text-muted-foreground">Estado de animo bajo</span>
+                    </div>
+                  )}
+                  {patient.motivation <= 2 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 rounded-full bg-warning" />
+                      <span className="text-muted-foreground">Motivacion baja</span>
+                    </div>
+                  )}
+                  {patient.symptomsCount >= 3 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 rounded-full bg-destructive" />
+                      <span className="text-muted-foreground">Multiples sintomas reportados ({patient.symptomsCount})</span>
+                    </div>
+                  )}
+                  {daysSinceLastActivity > 7 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 rounded-full bg-destructive" />
+                      <span className="text-muted-foreground">Sin actividad reciente ({daysSinceLastActivity} dias)</span>
+                    </div>
+                  )}
+                  {patient.adherence >= 70 && patient.appointmentRate >= 70 && patient.mood > 2 && patient.motivation > 2 && patient.symptomsCount < 3 && daysSinceLastActivity <= 7 && (
+                    <div className="flex items-center gap-2 text-sm text-success">
+                      <span className="w-2 h-2 rounded-full bg-success" />
+                      <span>Sin factores de riesgo identificados</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Adherence & Appointments */}
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-foreground">Adherencia y Asistencia</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Adherencia al tratamiento</span>
+                  <span className="text-sm font-medium text-foreground">{patient.adherence}%</span>
+                </div>
+                <Progress value={patient.adherence} className="h-2 bg-muted" />
+              </div>
+              <Separator className="bg-border" />
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="flex items-center justify-center gap-1 text-success">
+                    <CalendarCheck className="h-4 w-4" />
+                    <span className="text-lg font-bold">{patient.appointmentsAttended}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Asistidas</p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-center gap-1 text-warning">
+                    <CalendarX className="h-4 w-4" />
+                    <span className="text-lg font-bold">{patient.cancelledEvents}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Canceladas</p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-center gap-1 text-destructive">
+                    <CalendarIcon className="h-4 w-4" />
+                    <span className="text-lg font-bold">{patient.missedEvents}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">No asistidas</p>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Tasa de asistencia</span>
+                  <span className="text-sm font-medium text-foreground">{patient.appointmentRate}%</span>
+                </div>
+                <Progress value={patient.appointmentRate} className="h-2 bg-muted" />
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Adherence Charts */}
-      <DailyAdherenceChart data={dailyAdherence} />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <WeeklyAdherenceChart data={weeklyAdherence} />
-        <AdherenceChart data={adherenceHistory} title="Tendencia de Adherencia" />
-      </div>
+          {/* Emotional State */}
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-foreground">Estado Emocional</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <MoodBadge value={patient.mood} />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Animo</p>
+                    <p className="text-sm font-medium text-foreground">{patient.mood}/5</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <MoodBadge value={patient.motivation} />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Motivacion</p>
+                    <p className="text-sm font-medium text-foreground">{patient.motivation}/5</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Side Effects Chart */}
-      <SideEffectsChart data={sideEffects} />
+          {/* Clinical Record & Medication Plan */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ClinicalRecordCard 
+              record={clinicalRecord} 
+              patient={patient}
+              onImport={(externalId) => console.log("[v0] Import clinical record:", externalId)}
+              onRefresh={() => console.log("[v0] Refresh clinical record")}
+            />
+            <MedicationPlanCard 
+              plan={medicationPlan}
+              patientId={patient.id}
+              onUpdateMedication={(medId, updates) => console.log("Update medication:", medId, updates)}
+              onAddMedication={(med) => console.log("Add medication:", med)}
+              onDeleteMedication={(medId) => console.log("Delete medication:", medId)}
+              onUpdateNotes={(notes) => console.log("Update notes:", notes)}
+            />
+          </div>
 
-      {/* Weight & Mood Charts */}
-      <WeightChart data={weightHistory} />
-      <MoodChart data={moodHistory} />
+          {/* Symptoms Table */}
+          <SymptomsList symptoms={symptoms} />
 
-      {/* Symptoms Table */}
-      <SymptomsList symptoms={symptoms} />
+          {/* Messaging Panel */}
+          <MessagingPanel
+            patient={patient}
+            messages={patientMessages}
+            caregivers={caregivers}
+            onSendMessage={(msg) => console.log("[v0] Send message:", msg)}
+          />
+        </TabsContent>
 
-      {/* Intents by Type */}
-      <IntentsByType data={patientIntents} totalMessages={patient.messagesCount} />
+        {/* Statistics Tab */}
+        <TabsContent value="stats" className="space-y-4 mt-4">
+          {/* Interaction with Sarah & Medical Events */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-foreground">Interaccion con Sarah</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-primary">
+                    <MessageSquare className="h-5 w-5" />
+                    <span className="text-2xl font-bold">{patient.messagesCount}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-foreground">mensajes totales</p>
+                    <p className="text-xs text-muted-foreground">
+                      Ultima interaccion: {patient.lastInteraction}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Interactions Table */}
-      <InteractionsTable interactions={interactions} />
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+                  <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                  Frecuencia de Eventos Medicos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-6">
+                  <div>
+                    <span className="text-2xl font-bold text-foreground">{medicalEventFrequency.eventsPerWeek}</span>
+                    <p className="text-xs text-muted-foreground">eventos/semana</p>
+                  </div>
+                  <Separator orientation="vertical" className="h-10" />
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 rounded-full bg-muted-foreground" />
+                      <span className="text-muted-foreground">Programados: {medicalEventFrequency.scheduledEvents}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="w-2 h-2 rounded-full bg-success" />
+                      <span className="text-muted-foreground">Completados: {medicalEventFrequency.completedEvents}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Adherence Charts */}
+          <DailyAdherenceChart data={dailyAdherence} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <WeeklyAdherenceChart data={weeklyAdherence} />
+            <AdherenceChart data={adherenceHistory} title="Tendencia de Adherencia" />
+          </div>
+
+          {/* Side Effects Chart */}
+          <SideEffectsChart data={sideEffects} />
+
+          {/* Weight & Mood Charts */}
+          <WeightChart data={weightHistory} />
+          <MoodChart data={moodHistory} />
+
+          {/* Intents by Type */}
+          <IntentsByType data={patientIntents} totalMessages={patient.messagesCount} />
+
+          {/* Interactions Table */}
+          <InteractionsTable interactions={interactions} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
