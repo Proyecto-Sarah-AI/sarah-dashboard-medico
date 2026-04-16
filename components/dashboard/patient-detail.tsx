@@ -446,6 +446,9 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             caregivers={caregivers}
             onSendMessage={(msg) => console.log("[v0] Send message:", msg)}
           />
+
+          {/* Interactions History */}
+          <InteractionsTable interactions={interactions} />
         </TabsContent>
 
         {/* Statistics Tab */}
@@ -517,9 +520,6 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
 
           {/* Intents by Type */}
           <IntentsByType data={patientIntents} totalMessages={patient.messagesCount} />
-
-          {/* Interactions Table */}
-          <InteractionsTable interactions={interactions} />
         </TabsContent>
       </Tabs>
     </div>
