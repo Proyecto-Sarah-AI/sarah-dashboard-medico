@@ -5,21 +5,18 @@ import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { OverviewSection } from "@/components/dashboard/overview-section"
 import { PatientsTable } from "@/components/dashboard/patients-table"
 import { PatientDetail } from "@/components/dashboard/patient-detail"
-import { KPICard } from "@/components/dashboard/kpi-card"
+
 import { patients, aggregateMetrics } from "@/lib/mock-data"
 import type { Patient } from "@/lib/mock-data"
 import { 
-  Calendar, 
   Menu,
   Heart,
-  Search,
-  AlertTriangle
+  Search
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { cn } from "@/lib/utils"
+
 
 // Patients Section with Search
 function PatientsSection({ onSelectPatient }: { onSelectPatient: (patient: Patient) => void }) {
@@ -95,83 +92,6 @@ export default function DashboardPage() {
       case "patients":
         return <PatientsSection onSelectPatient={setSelectedPatient} />
       
-      case "appointments":
-        return (
-          <div className="space-y-4">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Citas Médicas</h1>
-              <p className="text-sm text-muted-foreground">
-                Gestión de eventos y citas programadas
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <KPICard
-                title="Citas Totales"
-                value={patients.reduce((sum, p) => sum + p.appointmentsTotal, 0)}
-                icon={<Calendar className="h-4 w-4" />}
-              />
-              <KPICard
-                title="Asistencia Promedio"
-                value={`${Math.round(patients.reduce((sum, p) => sum + p.appointmentRate, 0) / patients.length)}%`}
-                trend="up"
-                trendValue="Buen cumplimiento"
-                variant="success"
-              />
-              <KPICard
-                title="Citas Perdidas"
-                value={patients.reduce((sum, p) => sum + p.missedEvents + p.cancelledEvents, 0)}
-                variant="warning"
-              />
-            </div>
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground">Asistencia por Paciente</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {patients.map(patient => (
-                    <div 
-                      key={patient.id} 
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 cursor-pointer transition-colors"
-                      onClick={() => setSelectedPatient(patient)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-medium">
-                          {patient.avatar}
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{patient.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {patient.appointmentsAttended}/{patient.appointmentsTotal} citas asistidas
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {/* Alert indicator for high-risk patients with missed events */}
-                        {(patient.missedEvents + patient.cancelledEvents) >= 2 && patient.abandonmentRisk >= 3 && (
-                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-destructive/10 border border-destructive/30">
-                            <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
-                            <span className="text-xs font-medium text-destructive">Alerta</span>
-                          </div>
-                        )}
-                        <div className="text-right">
-                          <p className={cn(
-                            "font-mono text-sm",
-                            patient.appointmentRate >= 80 ? "text-success" : 
-                            patient.appointmentRate >= 60 ? "text-warning" : "text-destructive"
-                          )}>
-                            {patient.appointmentRate}%
-                          </p>
-                          <p className="text-xs text-muted-foreground">Asistencia</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )
       
       default:
         return <OverviewSection />

@@ -17,8 +17,9 @@ import {
 } from "@/components/ui/tooltip"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import type { Patient } from "@/lib/mock-data"
+import { getPatientSymptoms } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
-import { ArrowUpDown, ArrowUp, ArrowDown, HelpCircle } from "lucide-react"
+import { ArrowUpDown, ArrowUp, ArrowDown, HelpCircle, CalendarCheck, Stethoscope } from "lucide-react"
 
 interface PatientsTableProps {
   patients: Patient[]
@@ -26,7 +27,7 @@ interface PatientsTableProps {
   selectedPatientId?: string
 }
 
-type SortKey = "name" | "bmi" | "bmiChange" | "adherence" | "abandonmentRisk" | "treatmentRisk"
+type SortKey = "name" | "bmi" | "bmiChange" | "adherence" | "appointmentRate" | "symptomsCount" | "abandonmentRisk" | "treatmentRisk"
 
 // Risk level legend
 const riskLevelLabels: Record<number, string> = {
@@ -52,6 +53,8 @@ const columnDefinitions: Record<string, string> = {
   bmi: "Indice de Masa Corporal actual del paciente",
   bmiChange: "Variacion porcentual del IMC desde el inicio del tratamiento",
   adherence: "Porcentaje de cumplimiento del tratamiento medicamentoso",
+  appointmentRate: "Porcentaje y numero de citas medicas asistidas",
+  symptomsCount: "Cantidad de sintomas reportados por el paciente",
   abandonmentRisk: "Probabilidad de que el paciente abandone el tratamiento (1-5)",
   treatmentRisk: "Riesgo de complicaciones o efectos adversos del tratamiento (1-5)"
 }
@@ -173,6 +176,14 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
           aValue = a.adherence
           bValue = b.adherence
           break
+        case "appointmentRate":
+          aValue = a.appointmentRate
+          bValue = b.appointmentRate
+          break
+        case "symptomsCount":
+          aValue = a.symptomsCount
+          bValue = b.symptomsCount
+          break
         case "abandonmentRisk":
           aValue = a.abandonmentRisk
           bValue = b.abandonmentRisk
@@ -250,6 +261,24 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               description={columnDefinitions.adherence}
             />
             <SortableHeader 
+              label="Citas Asistidas" 
+              sortKey="appointmentRate" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort}
+              className="text-center"
+              description={columnDefinitions.appointmentRate}
+            />
+            <SortableHeader 
+              label="Sintomas" 
+              sortKey="symptomsCount" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort}
+              className="text-center"
+              description={columnDefinitions.symptomsCount}
+            />
+            <SortableHeader 
               label="Riesgo Abandono" 
               sortKey="abandonmentRisk" 
               currentSort={sortKey} 
@@ -311,6 +340,71 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               </TableCell>
               <TableCell className="py-3">
                 <AdherenceBar value={patient.adherence} />
+              </TableCell>
+              <TableCell className="text-center py-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex flex-col items-center gap-0.5 cursor-help">
+                      <span className={cn(
+                        "font-mono text-sm font-medium",
+                        patient.appointmentRate >= 80 ? "text-success" : 
+                        patient.appointmentRate >= 60 ? "text-warning" : "text-destructive"
+                      )}>
+                        {patient.appointmentRate}%
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {patient.appointmentsAttended}/{patient.appointmentsTotal}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {patient.appointmentsAttended} de {patient.appointmentsTotal} citas asistidas
+                  </TooltipContent>
+                </Tooltip>
+              </TableCell>
+              <TableCell className="text-center py-3">
+                {(() => {
+                  const symptoms = getPatientSymptoms(patient.id)
+                  const symptomsCount = symptoms.length
+                  return (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex flex-col items-center gap-0.5 cursor-help">
+                          <span className={cn(
+                            "inline-flex items-center justify-center w-7 h-7 rounded font-mono font-bold text-sm",
+                            symptomsCount === 0 ? "bg-success/20 text-success" :
+                            symptomsCount <= 2 ? "bg-warning/20 text-warning" : "bg-destructive/20 text-destructive"
+                          )}>
+                            {symptomsCount}
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="max-w-[250px]">
+                        {symptomsCount === 0 ? (
+                          <span>Sin sintomas reportados</span>
+                        ) : (
+                          <div className="space-y-1">
+                            <p className="font-medium">{symptomsCount} sintoma{symptomsCount > 1 ? "s" : ""} reportado{symptomsCount > 1 ? "s" : ""}:</p>
+                            <ul className="text-xs space-y-0.5">
+                              {symptoms.slice(0, 5).map((s, i) => (
+                                <li key={i} className="flex items-center gap-1">
+                                  <span className={cn(
+                                    "w-1.5 h-1.5 rounded-full",
+                                    s.severity === 1 ? "bg-success" : s.severity === 2 ? "bg-warning" : "bg-destructive"
+                                  )} />
+                                  {s.symptom}
+                                </li>
+                              ))}
+                              {symptoms.length > 5 && (
+                                <li className="text-muted-foreground">+{symptoms.length - 5} mas...</li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  )
+                })()}
               </TableCell>
               <TableCell className="text-center py-3">
                 <Tooltip>

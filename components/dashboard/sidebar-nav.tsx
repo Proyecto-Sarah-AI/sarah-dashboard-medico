@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils"
 import { 
   LayoutDashboard, 
   Users, 
-  Calendar,
   Heart,
   Sun,
   Moon
@@ -21,7 +20,6 @@ interface SidebarNavProps {
 const navItems = [
   { id: "overview", label: "Resumen", icon: LayoutDashboard },
   { id: "patients", label: "Pacientes", icon: Users },
-  { id: "appointments", label: "Citas", icon: Calendar },
 ]
 
 export function SidebarNav({ activeSection, onSectionChange }: SidebarNavProps) {
