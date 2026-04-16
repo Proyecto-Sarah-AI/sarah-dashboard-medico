@@ -6,7 +6,8 @@ import {
   Users, 
   Heart,
   Sun,
-  Moon
+  Moon,
+  LogOut
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
@@ -106,7 +107,7 @@ export function SidebarNav({ activeSection, onSectionChange, treatmentType, onTr
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-sidebar-border">
+      <div className="p-3 border-t border-sidebar-border space-y-2">
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -123,10 +124,22 @@ export function SidebarNav({ activeSection, onSectionChange, treatmentType, onTr
           )}
           {mounted ? (theme === "dark" ? "Modo claro" : "Modo oscuro") : "Cambiar tema"}
         </Button>
-        <div className="mt-3 px-3 py-2 rounded-lg bg-muted/50">
-          <p className="text-xs text-muted-foreground">Dr. Juan Pérez</p>
-          <p className="text-xs text-primary">Endocrinología</p>
+        <div className="px-3 py-2 rounded-lg bg-muted/50">
+          <p className="text-xs text-muted-foreground">Dr. Juan Perez</p>
+          <p className="text-xs text-primary">Endocrinologia</p>
         </div>
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => {
+            // Handle logout - redirect to login page or clear session
+            console.log("[v0] Logout clicked")
+            window.location.href = "/login"
+          }}
+        >
+          <LogOut className="h-4 w-4" />
+          Cerrar sesion
+        </Button>
       </div>
     </aside>
   )
