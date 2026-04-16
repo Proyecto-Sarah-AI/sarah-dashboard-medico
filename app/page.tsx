@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 
+export const dynamic = "force-dynamic"
+
 // Patients Section with Search
 function PatientsSection({ 
   onSelectPatient, 
