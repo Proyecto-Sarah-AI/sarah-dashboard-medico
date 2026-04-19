@@ -98,7 +98,7 @@ function AdherenceStackedBars({
             style={{ width: `${farmacologica}%` }}
           />
         </div>
-        <span className="text-xs font-medium w-12">Farm. → {farmacologica}%</span>
+        <span className="text-xs font-medium w-20">Farmacológica → {farmacologica}%</span>
       </div>
       <div className="flex items-center gap-2">
         <div className="h-2 w-16 rounded-full bg-muted overflow-hidden">
@@ -107,7 +107,7 @@ function AdherenceStackedBars({
             style={{ width: `${cuidado}%` }}
           />
         </div>
-        <span className="text-xs font-medium w-12">Cuid. → {cuidado}%</span>
+        <span className="text-xs font-medium w-20">Cuidado → {cuidado}%</span>
       </div>
       <div className="flex items-center gap-2">
         <div className="h-2 w-16 rounded-full bg-muted overflow-hidden">
@@ -116,7 +116,7 @@ function AdherenceStackedBars({
             style={{ width: `${persistencia}%` }}
           />
         </div>
-        <span className="text-xs font-medium w-12">Pers. → {persistencia}%</span>
+        <span className="text-xs font-medium w-20">Persistencia → {persistencia}%</span>
       </div>
     </div>
   )

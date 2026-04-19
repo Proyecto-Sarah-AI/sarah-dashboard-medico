@@ -396,47 +396,7 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             />
           </div>
 
-          {/* Estado Emocional Explanation Panel */}
-          <Card className="bg-card border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">Cómo Interpretar Estado Emocional</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-2">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-success/10 border border-success/20">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-success/20 flex items-center justify-center">
-                    <span className="text-xs font-bold text-success">0-11</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Sin malestar significativo</p>
-                    <p className="text-xs text-muted-foreground mt-1">El paciente se adapta bien al tratamiento y muestra indicadores psicológicos positivos.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-warning/10 border border-warning/20">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center">
-                    <span className="text-xs font-bold text-warning">12-19</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Malestar moderado</p>
-                    <p className="text-xs text-muted-foreground mt-1">El paciente muestra cierto malestar; considere monitoreo e intervenciones de apoyo.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center">
-                    <span className="text-xs font-bold text-destructive">20-36</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Malestar elevado</p>
-                    <p className="text-xs text-muted-foreground mt-1">El paciente experimenta malestar psicológico significativo; se recomienda atención clínica inmediata.</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Symptoms Table */}
           <SymptomsList symptoms={symptoms} />
