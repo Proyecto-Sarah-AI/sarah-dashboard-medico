@@ -104,9 +104,9 @@ export function EstadoEmocionalBadge({ score, showLabel = true, size = "sm" }: E
 }
 
 export function getEstadoEmocionalColorClass(score: number): string {
-  if (score <= 3) return "bg-success text-success-foreground"
-  if (score <= 7) return "bg-warning text-warning-foreground"
-  return "bg-destructive text-destructive-foreground"
+  if (score <= 3) return "bg-success/20 text-success"
+  if (score <= 7) return "bg-warning/20 text-warning"
+  return "bg-destructive/20 text-destructive"
 }
 
 export function EstadoEmocionalInfoModal() {

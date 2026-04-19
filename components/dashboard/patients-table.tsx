@@ -368,14 +368,14 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                   {patient.bmiChange > 0 ? "+" : ""}{patient.bmiChange.toFixed(1)}%
                 </span>
               </TableCell>
-              <TableCell className="py-3 pr-8">
+              <TableCell className="py-3 min-w-[200px]">
                 <AdherenceStackedBars 
                   farmacologica={patient.adherenceFarmacologica}
                   cuidado={patient.adherenciaCuidado}
                   persistencia={patient.persistencia}
                 />
               </TableCell>
-              <TableCell className="text-center py-3 px-8">
+              <TableCell className="text-center py-3 w-24">
                 {(() => {
                   const colorClass = getEstadoEmocionalColorClass(patient.estadoEmocional)
                   return (
@@ -388,7 +388,7 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                   )
                 })()}
               </TableCell>
-              <TableCell className="text-center py-3 pl-8">
+              <TableCell className="text-center py-3 w-24">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex flex-col items-center gap-0.5 cursor-help">
@@ -409,7 +409,7 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
-              <TableCell className="text-center py-3">
+              <TableCell className="text-center py-3 w-24">
                 {(() => {
                   const symptoms = getPatientSymptoms(patient.id)
                   const symptomsCount = symptoms.length
