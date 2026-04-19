@@ -9,9 +9,7 @@ export interface Patient {
   bmi: number
   initialBmi: number
   bmiChange: number
-  adherenceFarmacologica: number
-  adherenciaCuidado: number
-  persistencia: number
+  adherence: number
   mood: number
   motivation: number
   appointmentsAttended: number
@@ -22,7 +20,7 @@ export interface Patient {
   symptomsCount: number
   symptomsSeverity: number
   abandonmentRisk: number
-  ghq12Score: number
+  treatmentRisk: number
   lastInteraction: string
   messagesCount: number
   treatmentDays: number
@@ -38,9 +36,7 @@ export interface WeightHistory {
 
 export interface AdherenceHistory {
   date: string
-  adherenceFarmacologica: number
-  adherenciaCuidado: number
-  persistencia: number
+  adherence: number
 }
 
 export interface MoodHistory {
@@ -69,9 +65,7 @@ export const patients: Patient[] = [
     bmi: 33.8,
     initialBmi: 38.6,
     bmiChange: -12.4,
-    adherenceFarmacologica: 92,
-    adherenciaCuidado: 80,
-    persistencia: 88,
+    adherence: 87,
     mood: 4,
     motivation: 4,
     appointmentsAttended: 12,
@@ -82,7 +76,7 @@ export const patients: Patient[] = [
     symptomsCount: 2,
     symptomsSeverity: 1.5,
     abandonmentRisk: 1,
-    ghq12Score: 6,
+    treatmentRisk: 2,
     lastInteraction: "2024-01-15",
     messagesCount: 156,
     treatmentDays: 90,
@@ -100,9 +94,7 @@ export const patients: Patient[] = [
     bmi: 37.3,
     initialBmi: 39.5,
     bmiChange: -5.6,
-    adherenceFarmacologica: 70,
-    adherenciaCuidado: 55,
-    persistencia: 60,
+    adherence: 65,
     mood: 3,
     motivation: 2,
     appointmentsAttended: 8,
@@ -113,7 +105,7 @@ export const patients: Patient[] = [
     symptomsCount: 4,
     symptomsSeverity: 2.2,
     abandonmentRisk: 4,
-    ghq12Score: 18,
+    treatmentRisk: 3,
     lastInteraction: "2024-01-10",
     messagesCount: 45,
     treatmentDays: 75,
@@ -131,9 +123,7 @@ export const patients: Patient[] = [
     bmi: 30.5,
     initialBmi: 37.1,
     bmiChange: -17.8,
-    adherenceFarmacologica: 98,
-    adherenciaCuidado: 93,
-    persistencia: 96,
+    adherence: 95,
     mood: 5,
     motivation: 5,
     appointmentsAttended: 16,
@@ -144,7 +134,7 @@ export const patients: Patient[] = [
     symptomsCount: 0,
     symptomsSeverity: 0,
     abandonmentRisk: 1,
-    ghq12Score: 3,
+    treatmentRisk: 1,
     lastInteraction: "2024-01-15",
     messagesCount: 234,
     treatmentDays: 120,
@@ -162,9 +152,7 @@ export const patients: Patient[] = [
     bmi: 34.5,
     initialBmi: 36.5,
     bmiChange: -5.5,
-    adherenceFarmacologica: 78,
-    adherenciaCuidado: 65,
-    persistencia: 72,
+    adherence: 72,
     mood: 3,
     motivation: 3,
     appointmentsAttended: 9,
@@ -175,7 +163,7 @@ export const patients: Patient[] = [
     symptomsCount: 3,
     symptomsSeverity: 2.0,
     abandonmentRisk: 3,
-    ghq12Score: 14,
+    treatmentRisk: 3,
     lastInteraction: "2024-01-14",
     messagesCount: 78,
     treatmentDays: 60,
@@ -193,9 +181,7 @@ export const patients: Patient[] = [
     bmi: 30.1,
     initialBmi: 30.1,
     bmiChange: 0,
-    adherenceFarmacologica: 40,
-    adherenciaCuidado: 35,
-    persistencia: 30,
+    adherence: 45,
     mood: 2,
     motivation: 2,
     appointmentsAttended: 3,
@@ -206,7 +192,7 @@ export const patients: Patient[] = [
     symptomsCount: 5,
     symptomsSeverity: 2.5,
     abandonmentRisk: 5,
-    ghq12Score: 28,
+    treatmentRisk: 4,
     lastInteraction: "2024-01-05",
     messagesCount: 12,
     treatmentDays: 45,
@@ -224,9 +210,7 @@ export const patients: Patient[] = [
     bmi: 31.0,
     initialBmi: 35.9,
     bmiChange: -13.6,
-    adherenceFarmacologica: 88,
-    adherenciaCuidado: 78,
-    persistencia: 85,
+    adherence: 82,
     mood: 4,
     motivation: 4,
     appointmentsAttended: 14,
@@ -237,7 +221,7 @@ export const patients: Patient[] = [
     symptomsCount: 1,
     symptomsSeverity: 1.0,
     abandonmentRisk: 2,
-    ghq12Score: 8,
+    treatmentRisk: 2,
     lastInteraction: "2024-01-15",
     messagesCount: 189,
     treatmentDays: 100,
@@ -273,47 +257,41 @@ export const getAdherenceHistory = (patientId: string): AdherenceHistory[] => {
   const patient = patients.find(p => p.id === patientId)
   if (!patient) return []
 
-  const avgAdherence = (patient.adherenceFarmacologica + patient.adherenciaCuidado + patient.persistencia) / 3
-  const variance = avgAdherence > 80 ? 5 : avgAdherence > 60 ? 15 : 25
+  const variance = patient.adherence > 80 ? 5 : patient.adherence > 60 ? 15 : 25
 
   return Array.from({ length: 12 }, (_, i) => ({
     date: `Sem ${i + 1}`,
-    adherenceFarmacologica: Math.max(0, Math.min(100, patient.adherenceFarmacologica + (Math.random() - 0.5) * variance * 2)),
-    adherenciaCuidado: Math.max(0, Math.min(100, patient.adherenciaCuidado + (Math.random() - 0.5) * variance * 2)),
-    persistencia: Math.max(0, Math.min(100, patient.persistencia + (Math.random() - 0.5) * variance * 2))
+    adherence: Math.max(0, Math.min(100, patient.adherence + (Math.random() - 0.5) * variance * 2))
   }))
 }
 
 export interface DailyAdherence {
   date: string
-  adherenceFarmacologica: number
-  adherenciaCuidado: number
-  persistencia: number
+  adherence: number
+  completed: boolean
 }
 
 export const getDailyAdherenceHistory = (patientId: string): DailyAdherence[] => {
   const patient = patients.find(p => p.id === patientId)
   if (!patient) return []
 
-  const avgAdherence = (patient.adherenceFarmacologica + patient.adherenciaCuidado + patient.persistencia) / 3
-  const variance = avgAdherence > 80 ? 10 : avgAdherence > 60 ? 20 : 30
+  const baseAdherence = patient.adherence
+  const variance = patient.adherence > 80 ? 10 : patient.adherence > 60 ? 20 : 30
 
   return Array.from({ length: 30 }, (_, i) => {
     const day = 30 - i
+    const adherenceValue = Math.max(0, Math.min(100, baseAdherence + (Math.random() - 0.5) * variance))
     return {
-      date: `Dia ${day}`,
-      adherenceFarmacologica: Math.round(Math.max(0, Math.min(100, patient.adherenceFarmacologica + (Math.random() - 0.5) * variance))),
-      adherenciaCuidado: Math.round(Math.max(0, Math.min(100, patient.adherenciaCuidado + (Math.random() - 0.5) * variance))),
-      persistencia: Math.round(Math.max(0, Math.min(100, patient.persistencia + (Math.random() - 0.5) * variance)))
+      date: `Día ${day}`,
+      adherence: Math.round(adherenceValue),
+      completed: adherenceValue >= 50
     }
   }).reverse()
 }
 
 export interface WeeklyAdherence {
   week: string
-  adherenceFarmacologica: number
-  adherenciaCuidado: number
-  persistencia: number
+  adherence: number
   target: number
 }
 
@@ -321,14 +299,12 @@ export const getWeeklyAdherenceHistory = (patientId: string): WeeklyAdherence[] 
   const patient = patients.find(p => p.id === patientId)
   if (!patient) return []
 
-  const avgAdherence = (patient.adherenceFarmacologica + patient.adherenciaCuidado + patient.persistencia) / 3
-  const variance = avgAdherence > 80 ? 8 : avgAdherence > 60 ? 15 : 25
+  const baseAdherence = patient.adherence
+  const variance = patient.adherence > 80 ? 8 : patient.adherence > 60 ? 15 : 25
 
   return Array.from({ length: 8 }, (_, i) => ({
     week: `Sem ${i + 1}`,
-    adherenceFarmacologica: Math.round(Math.max(0, Math.min(100, patient.adherenceFarmacologica + (Math.random() - 0.5) * variance))),
-    adherenciaCuidado: Math.round(Math.max(0, Math.min(100, patient.adherenciaCuidado + (Math.random() - 0.5) * variance))),
-    persistencia: Math.round(Math.max(0, Math.min(100, patient.persistencia + (Math.random() - 0.5) * variance))),
+    adherence: Math.round(Math.max(0, Math.min(100, baseAdherence + (Math.random() - 0.5) * variance))),
     target: 80
   }))
 }
@@ -829,8 +805,7 @@ export const getPatientIntents = (patientId: string): PatientIntentData[] => {
 
   // Generate intent distribution based on patient profile
   const totalMessages = patient.messagesCount
-  const avgAdherence = (patient.adherenceFarmacologica + patient.adherenciaCuidado + patient.persistencia) / 3
-  const isHighAdherence = avgAdherence >= 80
+  const isHighAdherence = patient.adherence >= 80
   const isPositiveMood = patient.mood >= 4
 
   // Base distribution varies by patient profile
@@ -881,7 +856,7 @@ export const getMedicalEventFrequency = (patientId: string): MedicalEventFrequen
   return {
     eventsPerWeek: Math.round((totalEvents / weeksInTreatment) * 10) / 10,
     scheduledEvents: totalEvents,
-    completedEvents: patient.appointmentsAttended + Math.floor(patient.adherenceFarmacologica / 100 * patient.treatmentDays / 7) * 2
+    completedEvents: patient.appointmentsAttended + Math.floor(patient.adherence / 100 * patient.treatmentDays / 7) * 2
   }
 }
 
@@ -1176,59 +1151,20 @@ export const getMessageChannelLabel = (channel: MessageChannel): string => {
 
 export const aggregateMetrics = () => {
   const total = patients.length
-  const avgAdherenceFarm = patients.reduce((sum, p) => sum + p.adherenceFarmacologica, 0) / total
-  const avgAdherenceCuid = patients.reduce((sum, p) => sum + p.adherenciaCuidado, 0) / total
-  const avgPersistencia = patients.reduce((sum, p) => sum + p.persistencia, 0) / total
+  const avgAdherence = patients.reduce((sum, p) => sum + p.adherence, 0) / total
   const avgBmiChange = patients.reduce((sum, p) => sum + p.bmiChange, 0) / total
-  const criticalPatients = patients.filter(p => p.abandonmentRisk >= 4 || p.ghq12Score >= 20).length
+  const criticalPatients = patients.filter(p => p.abandonmentRisk >= 4 || p.treatmentRisk >= 4).length
   const totalSymptoms = patients.reduce((sum, p) => sum + p.symptomsCount, 0)
   const avgMood = patients.reduce((sum, p) => sum + p.mood, 0) / total
   const avgMotivation = patients.reduce((sum, p) => sum + p.motivation, 0) / total
 
   return {
     totalPatients: total,
-    avgAdherenceFarm: Math.round(avgAdherenceFarm),
-    avgAdherenceCuid: Math.round(avgAdherenceCuid),
-    avgPersistencia: Math.round(avgPersistencia),
+    avgAdherence: Math.round(avgAdherence),
     avgBmiChange: avgBmiChange.toFixed(1),
     criticalPatients,
     totalSymptoms,
     avgMood: avgMood.toFixed(1),
     avgMotivation: avgMotivation.toFixed(1)
   }
-}
-
-// GHQ-12 Utility Functions
-export type GHQ12Level = "none" | "moderate" | "elevated"
-
-export interface GHQ12Info {
-  level: GHQ12Level
-  label: string
-  color: string
-  badgeClass: string
-}
-
-export const getGHQ12Info = (score: number): GHQ12Info => {
-  if (score <= 11) return { 
-    level: "none", 
-    label: "Sin malestar significativo", 
-    color: "var(--success)",
-    badgeClass: "bg-success/20 text-success" 
-  }
-  if (score <= 19) return { 
-    level: "moderate", 
-    label: "Malestar moderado", 
-    color: "var(--warning)",
-    badgeClass: "bg-warning/20 text-warning" 
-  }
-  return { 
-    level: "elevated", 
-    label: "Malestar elevado", 
-    color: "var(--destructive)",
-    badgeClass: "bg-destructive/20 text-destructive" 
-  }
-}
-
-export const getAvgAdherence = (patient: Patient): number => {
-  return Math.round((patient.adherenceFarmacologica + patient.adherenciaCuidado + patient.persistencia) / 3)
 }

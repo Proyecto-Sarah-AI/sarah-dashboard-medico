@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/tooltip"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import type { Patient } from "@/lib/mock-data"
-import { getPatientSymptoms, getGHQ12Info } from "@/lib/mock-data"
+import { getPatientSymptoms } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import { ArrowUpDown, ArrowUp, ArrowDown, HelpCircle, CalendarCheck, Stethoscope } from "lucide-react"
 
@@ -27,7 +27,7 @@ interface PatientsTableProps {
   selectedPatientId?: string
 }
 
-type SortKey = "name" | "bmi" | "bmiChange" | "adherenceFarmacologica" | "appointmentRate" | "symptomsCount" | "abandonmentRisk" | "ghq12Score"
+type SortKey = "name" | "bmi" | "bmiChange" | "adherence" | "appointmentRate" | "symptomsCount" | "abandonmentRisk" | "treatmentRisk"
 
 // Risk level legend
 const riskLevelLabels: Record<number, string> = {
@@ -52,15 +52,15 @@ const columnDefinitions: Record<string, string> = {
   name: "Nombre completo del paciente, edad y genero",
   bmi: "Indice de Masa Corporal actual del paciente",
   bmiChange: "Variacion porcentual del IMC desde el inicio del tratamiento",
-  adherenceFarmacologica: "Adherencia farmacologica, de cuidado y persistencia",
+  adherence: "Porcentaje de cumplimiento del tratamiento medicamentoso",
   appointmentRate: "Porcentaje y numero de citas medicas asistidas",
   symptomsCount: "Cantidad de sintomas reportados por el paciente",
   abandonmentRisk: "Probabilidad de que el paciente abandone el tratamiento (1-5)",
-  ghq12Score: "Bienestar psicosocial GHQ-12 (0-36). 0-11: sin malestar, 12-19: moderado, 20-36: elevado"
+  treatmentRisk: "Riesgo de complicaciones o efectos adversos del tratamiento (1-5)"
 }
 type SortDirection = "asc" | "desc" | null
 
-function AdherenceMiniBar({ label, value }: { label: string; value: number }) {
+function AdherenceBar({ value }: { value: number }) {
   const getColor = (val: number) => {
     if (val >= 80) return "bg-success"
     if (val >= 60) return "bg-warning"
@@ -68,30 +68,19 @@ function AdherenceMiniBar({ label, value }: { label: string; value: number }) {
   }
 
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-[10px] text-muted-foreground w-8 shrink-0">{label}</span>
-      <div className="h-1.5 w-14 rounded-full bg-muted overflow-hidden">
+    <div className="flex items-center gap-2">
+      <div className="h-2 w-20 rounded-full bg-muted overflow-hidden">
         <div 
           className={cn("h-full rounded-full transition-all", getColor(value))}
           style={{ width: `${value}%` }}
         />
       </div>
       <span className={cn(
-        "text-[10px] font-medium w-7 text-right",
+        "text-xs font-medium w-9 text-right",
         value >= 80 ? "text-success" : value >= 60 ? "text-warning" : "text-destructive"
       )}>
         {value}%
       </span>
-    </div>
-  )
-}
-
-function AdherenceBars({ patient }: { patient: Patient }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <AdherenceMiniBar label="Farm." value={patient.adherenceFarmacologica} />
-      <AdherenceMiniBar label="Cuid." value={patient.adherenciaCuidado} />
-      <AdherenceMiniBar label="Pers." value={patient.persistencia} />
     </div>
   )
 }
@@ -183,9 +172,9 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
           aValue = a.bmiChange
           bValue = b.bmiChange
           break
-        case "adherenceFarmacologica":
-          aValue = (a.adherenceFarmacologica + a.adherenciaCuidado + a.persistencia) / 3
-          bValue = (b.adherenceFarmacologica + b.adherenciaCuidado + b.persistencia) / 3
+        case "adherence":
+          aValue = a.adherence
+          bValue = b.adherence
           break
         case "appointmentRate":
           aValue = a.appointmentRate
@@ -199,9 +188,9 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
           aValue = a.abandonmentRisk
           bValue = b.abandonmentRisk
           break
-        case "ghq12Score":
-          aValue = a.ghq12Score
-          bValue = b.ghq12Score
+        case "treatmentRisk":
+          aValue = a.treatmentRisk
+          bValue = b.treatmentRisk
           break
         default:
           return 0
@@ -222,9 +211,9 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
   return (
     <TooltipProvider>
     <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-      {/* Legend */}
+      {/* Risk Level Legend */}
       <div className="px-4 py-2 bg-muted/20 border-b border-border flex items-center gap-4 flex-wrap text-xs">
-        <span className="text-muted-foreground font-medium">Riesgo abandono:</span>
+        <span className="text-muted-foreground font-medium">Niveles de riesgo:</span>
         {[1, 2, 3, 4, 5].map(level => (
           <span key={level} className="flex items-center gap-1">
             <span className={cn("w-5 h-5 rounded flex items-center justify-center font-mono font-bold text-xs", getRiskColor(level))}>
@@ -233,11 +222,6 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
             <span className="text-muted-foreground">{riskLevelLabels[level]}</span>
           </span>
         ))}
-        <span className="mx-2 text-border">|</span>
-        <span className="text-muted-foreground font-medium">GHQ-12:</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success" /><span className="text-muted-foreground">0-11</span></span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-warning" /><span className="text-muted-foreground">12-19</span></span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive" /><span className="text-muted-foreground">20-36</span></span>
       </div>
       <Table>
         <TableHeader>
@@ -270,11 +254,11 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
             />
             <SortableHeader 
               label="Adherencia" 
-              sortKey="adherenceFarmacologica" 
+              sortKey="adherence" 
               currentSort={sortKey} 
               direction={sortDirection} 
               onSort={handleSort}
-              description={columnDefinitions.adherenceFarmacologica}
+              description={columnDefinitions.adherence}
             />
             <SortableHeader 
               label="Citas Asistidas" 
@@ -304,13 +288,13 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               description={columnDefinitions.abandonmentRisk}
             />
             <SortableHeader 
-              label="Bienestar GHQ-12" 
-              sortKey="ghq12Score" 
+              label="Riesgo Tratamiento" 
+              sortKey="treatmentRisk" 
               currentSort={sortKey} 
               direction={sortDirection} 
               onSort={handleSort} 
               className="text-center"
-              description={columnDefinitions.ghq12Score}
+              description={columnDefinitions.treatmentRisk}
             />
           </TableRow>
         </TableHeader>
@@ -355,7 +339,7 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                 </span>
               </TableCell>
               <TableCell className="py-3">
-                <AdherenceBars patient={patient} />
+                <AdherenceBar value={patient.adherence} />
               </TableCell>
               <TableCell className="text-center py-3">
                 <Tooltip>
