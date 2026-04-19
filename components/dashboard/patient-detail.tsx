@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Calendar } from "@/components/ui/calendar"
 import { AlertBadge, MoodBadge } from "./alert-badge"
 import { WeightChart } from "./weight-chart"
@@ -54,7 +55,8 @@ import {
   ShieldAlert,
   CalendarClock,
   User,
-  BarChart3
+  BarChart3,
+  Info
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
@@ -64,6 +66,23 @@ import type { DateRange } from "react-day-picker"
 interface PatientDetailProps {
   patient: Patient
   onClose?: () => void
+}
+
+function getMotivationDescription(value: number): string {
+  switch (value) {
+    case 1:
+      return "El paciente no esta nada preparado para cambiar."
+    case 2:
+      return "El paciente esta pensando en cambiar, pero no ahora."
+    case 3:
+      return "El paciente quiere cambiar, pero no sabe como."
+    case 4:
+      return "El paciente se esta preparando para cambiar."
+    case 5:
+      return "El paciente esta tomando medidas activamente."
+    default:
+      return ""
+  }
 }
 
 export function PatientDetail({ patient, onClose }: PatientDetailProps) {
@@ -364,12 +383,28 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
                     <p className="text-sm font-medium text-foreground">{patient.mood}/5</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <MoodBadge value={patient.motivation} />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Motivacion</p>
-                    <p className="text-sm font-medium text-foreground">{patient.motivation}/5</p>
+                <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <MoodBadge value={patient.motivation} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">Motivacion (Readiness Ruler)</p>
+                      <p className="text-sm font-medium text-foreground">{patient.motivation}/5</p>
+                      <p className="text-xs text-muted-foreground mt-1 break-words">
+                        {getMotivationDescription(patient.motivation)}
+                      </p>
+                    </div>
                   </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+                        <Info className="h-4 w-4" />
+                        <span className="sr-only">Informacion sobre la escala de motivacion</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-[250px]">
+                      <p>La escala va de 1 a 5. Mientras mas cercano a 1, menor motivacion tiene el paciente para cambiar, aumentando sus probabilidades de abandono del tratamiento.</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
             </CardContent>
