@@ -3,19 +3,12 @@
 
 import { PatientsTable } from "./patients-table"
 import { PatientDetail } from "./patient-detail"
+import { DateRangePicker } from "./date-range-picker"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Patient } from "@/lib/mock-data"
-
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { Button } from "@/components/ui/button"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import type { DateRange } from "react-day-picker"
 import { 
   Activity, 
   AlertTriangle, 
-  Calendar as CalendarIcon,
   ShieldAlert
 } from "lucide-react"
 import { useState, useMemo } from "react"
@@ -37,7 +30,7 @@ interface OverviewSectionProps {
 
 export function OverviewSection({ patients: filteredPatients, treatmentLabel }: OverviewSectionProps) {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: new Date(new Date().setDate(new Date().getDate() - 30)),
     to: new Date()
   })
@@ -110,70 +103,11 @@ export function OverviewSection({ patients: filteredPatients, treatmentLabel }: 
         </div>
         
         {/* Date Range Filter */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="gap-2 text-sm bg-card">
-              <CalendarIcon className="h-4 w-4" />
-              {dateRange?.from ? (
-                dateRange.to ? (
-                  <>
-                    {format(dateRange.from, "dd MMM", { locale: es })} - {format(dateRange.to, "dd MMM yyyy", { locale: es })}
-                  </>
-                ) : (
-                  format(dateRange.from, "dd MMM yyyy", { locale: es })
-                )
-              ) : (
-                "Seleccionar periodo"
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <div className="p-3 border-b border-border">
-              <p className="text-sm font-medium text-foreground">Seleccionar rango</p>
-              <div className="flex gap-2 mt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setDateRange({
-                    from: new Date(new Date().setDate(new Date().getDate() - 7)),
-                    to: new Date()
-                  })}
-                >
-                  7 dias
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setDateRange({
-                    from: new Date(new Date().setDate(new Date().getDate() - 30)),
-                    to: new Date()
-                  })}
-                >
-                  30 dias
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setDateRange({
-                    from: new Date(new Date().setMonth(new Date().getMonth() - 3)),
-                    to: new Date()
-                  })}
-                >
-                  3 meses
-                </Button>
-              </div>
-            </div>
-            <CalendarComponent
-              initialFocus
-              mode="range"
-              defaultMonth={dateRange?.from}
-              selected={dateRange}
-              onSelect={setDateRange}
-              numberOfMonths={2}
-              locale={es}
-            />
-          </PopoverContent>
-        </Popover>
+        <DateRangePicker
+          from={dateRange.from}
+          to={dateRange.to}
+          onChange={setDateRange}
+        />
       </div>
 
       {/* Alert/Risk Cards */}
