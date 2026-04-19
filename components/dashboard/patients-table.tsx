@@ -299,6 +299,16 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               description={columnDefinitions.adherenceFarmacologica}
             />
             <SortableHeader 
+              label="Estado Emocional" 
+              sortKey="estadoEmocional" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+              className="text-center"
+              description={columnDefinitions.estadoEmocional}
+              showInfoModal={true}
+            />
+            <SortableHeader 
               label="Citas Asistidas" 
               sortKey="appointmentRate" 
               currentSort={sortKey} 
@@ -315,16 +325,6 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               onSort={handleSort}
               className="text-center"
               description={columnDefinitions.symptomsCount}
-            />
-            <SortableHeader 
-              label="Estado Emocional" 
-              sortKey="estadoEmocional" 
-              currentSort={sortKey} 
-              direction={sortDirection} 
-              onSort={handleSort} 
-              className="text-center"
-              description={columnDefinitions.estadoEmocional}
-              showInfoModal={true}
             />
           </TableRow>
         </TableHeader>
@@ -368,14 +368,27 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                   {patient.bmiChange > 0 ? "+" : ""}{patient.bmiChange.toFixed(1)}%
                 </span>
               </TableCell>
-              <TableCell className="py-3">
+              <TableCell className="py-3 pr-8">
                 <AdherenceStackedBars 
                   farmacologica={patient.adherenceFarmacologica}
                   cuidado={patient.adherenciaCuidado}
                   persistencia={patient.persistencia}
                 />
               </TableCell>
-              <TableCell className="text-center py-3">
+              <TableCell className="text-center py-3 px-8">
+                {(() => {
+                  const colorClass = getEstadoEmocionalColorClass(patient.estadoEmocional)
+                  return (
+                    <span className={cn(
+                      "inline-flex items-center justify-center w-7 h-7 rounded font-mono font-bold text-sm",
+                      colorClass
+                    )}>
+                      {patient.estadoEmocional}
+                    </span>
+                  )
+                })()}
+              </TableCell>
+              <TableCell className="text-center py-3 pl-8">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex flex-col items-center gap-0.5 cursor-help">
@@ -437,19 +450,6 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                         )}
                       </TooltipContent>
                     </Tooltip>
-                  )
-                })()}
-              </TableCell>
-              <TableCell className="text-center py-3">
-                {(() => {
-                  const colorClass = getEstadoEmocionalColorClass(patient.estadoEmocional)
-                  return (
-                    <span className={cn(
-                      "inline-flex items-center justify-center w-7 h-7 rounded font-mono font-bold text-sm",
-                      colorClass
-                    )}>
-                      {patient.estadoEmocional}
-                    </span>
                   )
                 })()}
               </TableCell>
