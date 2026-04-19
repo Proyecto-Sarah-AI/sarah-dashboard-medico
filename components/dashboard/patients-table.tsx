@@ -391,18 +391,13 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               <TableCell className="text-center py-3 px-4">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center gap-0.5 cursor-help">
-                      <span className={cn(
-                        "font-mono text-sm font-medium",
-                        patient.appointmentRate >= 80 ? "text-success" : 
-                        patient.appointmentRate >= 60 ? "text-warning" : "text-destructive"
-                      )}>
-                        {patient.appointmentRate}%
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {patient.appointmentsAttended}/{patient.appointmentsTotal}
-                      </span>
-                    </div>
+                    <span className={cn(
+                      "font-mono text-sm font-medium cursor-help",
+                      patient.appointmentRate >= 80 ? "text-success" : 
+                      patient.appointmentRate >= 60 ? "text-warning" : "text-destructive"
+                    )}>
+                      {patient.appointmentRate}%
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent>
                     {patient.appointmentsAttended} de {patient.appointmentsTotal} citas asistidas
