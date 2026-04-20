@@ -28,7 +28,7 @@ interface PatientsTableProps {
   selectedPatientId?: string
 }
 
-type SortKey = "name" | "bmi" | "bmiChange" | "adherenceFarmacologica" | "appointmentRate" | "symptomsCount" | "estadoEmocional"
+type SortKey = "name" | "bmi" | "bmiChange" | "adherenceFarmacologica" | "appointmentRate" | "symptomsCount" | "estadoEmocional" | "motivation"
 
 // Estado Emocional level legend
 const estadoEmocionalLegend = {
@@ -45,7 +45,43 @@ const columnDefinitions: Record<string, string> = {
   adherenceFarmacologica: "Cumplimiento de medicamentos, cuidados personales y persistencia en el tratamiento",
   appointmentRate: "Porcentaje y numero de citas medicas asistidas",
   symptomsCount: "Cantidad de sintomas reportados por el paciente",
-  estadoEmocional: "Puntuacion GHQ-12 del estado emocional del paciente (0-12)"
+  estadoEmocional: "Puntuacion GHQ-12 del estado emocional del paciente (0-12)",
+  motivation: "Escala Readiness Ruler (1-5) que indica la disposicion del paciente para cambiar"
+}
+
+// Motivation descriptions based on value
+const getMotivationLabel = (value: number): string => {
+  switch (value) {
+    case 1:
+      return "No preparado"
+    case 2:
+      return "Pensando"
+    case 3:
+      return "Quiere cambiar"
+    case 4:
+      return "Preparandose"
+    case 5:
+      return "Activo"
+    default:
+      return ""
+  }
+}
+
+const getMotivationDescription = (value: number): string => {
+  switch (value) {
+    case 1:
+      return "El paciente no esta nada preparado para cambiar."
+    case 2:
+      return "El paciente esta pensando en cambiar, pero no ahora."
+    case 3:
+      return "El paciente quiere cambiar, pero no sabe como."
+    case 4:
+      return "El paciente se esta preparando para cambiar."
+    case 5:
+      return "El paciente esta tomando medidas activamente."
+    default:
+      return ""
+  }
 }
 type SortDirection = "asc" | "desc" | null
 
@@ -230,6 +266,10 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
           aValue = a.estadoEmocional
           bValue = b.estadoEmocional
           break
+        case "motivation":
+          aValue = a.motivation
+          bValue = b.motivation
+          break
         default:
           return 0
       }
@@ -307,6 +347,15 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               className="text-center"
               description={columnDefinitions.estadoEmocional}
               showInfoModal={true}
+            />
+            <SortableHeader 
+              label="Motivacion" 
+              sortKey="motivation" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+              className="text-center"
+              description={columnDefinitions.motivation}
             />
             <SortableHeader 
               label="Citas Asistidas" 
@@ -387,6 +436,28 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                     </span>
                   )
                 })()}
+              </TableCell>
+              <TableCell className="text-center py-3 px-4">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex flex-col items-center gap-0.5 cursor-help">
+                      <span className={cn(
+                        "inline-flex items-center justify-center w-7 h-7 rounded font-mono font-bold text-sm",
+                        patient.motivation >= 4 ? "bg-success/20 text-success" :
+                        patient.motivation >= 3 ? "bg-warning/20 text-warning" :
+                        "bg-destructive/20 text-destructive"
+                      )}>
+                        {patient.motivation}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {getMotivationLabel(patient.motivation)}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[200px]">
+                    <p className="text-xs">{getMotivationDescription(patient.motivation)}</p>
+                  </TooltipContent>
+                </Tooltip>
               </TableCell>
               <TableCell className="text-center py-3 px-4">
                 <Tooltip>
