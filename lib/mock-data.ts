@@ -45,11 +45,20 @@ export interface MoodHistory {
   motivation: number
 }
 
+export type SymptomCategory = 
+  | "gastrointestinal"
+  | "neurologico"
+  | "metabolico"
+  | "musculoesqueletico"
+  | "psicologico"
+  | "cardiovascular"
+
 export interface SymptomReport {
   id: string
   patientId: string
   symptom: string
-  severity: 1 | 2 | 3
+  category: SymptomCategory
+  severity: number // 0-7 scale
   date: string
 }
 
@@ -329,10 +338,11 @@ export const getSideEffectsReport = (patientId: string): SideEffectReport[] => {
     return acc
   }, {} as Record<string, { count: number; maxSeverity: number }>)
 
+  // Map 0-7 scale to mild/moderate/severe: 0-2 = mild, 3-5 = moderate, 6-7 = severe
   return Object.entries(grouped).map(([name, data]) => ({
     name,
     count: data.count,
-    severity: data.maxSeverity === 1 ? "mild" : data.maxSeverity === 2 ? "moderate" : "severe"
+    severity: data.maxSeverity <= 2 ? "mild" : data.maxSeverity <= 5 ? "moderate" : "severe"
   })).sort((a, b) => b.count - a.count)
 }
 
@@ -348,21 +358,58 @@ export const getMoodHistory = (patientId: string): MoodHistory[] => {
 }
 
 export const symptoms: SymptomReport[] = [
-  { id: "S001", patientId: "P001", symptom: "Náuseas leves", severity: 1, date: "2024-01-14" },
-  { id: "S002", patientId: "P001", symptom: "Fatiga", severity: 2, date: "2024-01-12" },
-  { id: "S003", patientId: "P002", symptom: "Mareos", severity: 2, date: "2024-01-13" },
-  { id: "S004", patientId: "P002", symptom: "Dolor de cabeza", severity: 2, date: "2024-01-11" },
-  { id: "S005", patientId: "P002", symptom: "Estreñimiento", severity: 2, date: "2024-01-10" },
-  { id: "S006", patientId: "P002", symptom: "Insomnio", severity: 3, date: "2024-01-09" },
-  { id: "S007", patientId: "P004", symptom: "Náuseas", severity: 2, date: "2024-01-14" },
-  { id: "S008", patientId: "P004", symptom: "Fatiga", severity: 2, date: "2024-01-13" },
-  { id: "S009", patientId: "P004", symptom: "Diarrea", severity: 2, date: "2024-01-11" },
-  { id: "S010", patientId: "P005", symptom: "Náuseas severas", severity: 3, date: "2024-01-05" },
-  { id: "S011", patientId: "P005", symptom: "Vómitos", severity: 3, date: "2024-01-04" },
-  { id: "S012", patientId: "P005", symptom: "Fatiga extrema", severity: 3, date: "2024-01-03" },
-  { id: "S013", patientId: "P005", symptom: "Dolor abdominal", severity: 2, date: "2024-01-02" },
-  { id: "S014", patientId: "P005", symptom: "Mareos", severity: 2, date: "2024-01-01" },
-  { id: "S015", patientId: "P006", symptom: "Fatiga leve", severity: 1, date: "2024-01-10" },
+  // Patient P001 - Multiple reports with severity evolution
+  { id: "S001", patientId: "P001", symptom: "Náuseas", category: "gastrointestinal", severity: 2, date: "2024-01-14" },
+  { id: "S001b", patientId: "P001", symptom: "Náuseas", category: "gastrointestinal", severity: 3, date: "2024-01-10" },
+  { id: "S001c", patientId: "P001", symptom: "Náuseas", category: "gastrointestinal", severity: 4, date: "2024-01-05" },
+  { id: "S001d", patientId: "P001", symptom: "Náuseas", category: "gastrointestinal", severity: 5, date: "2024-01-01" },
+  { id: "S002", patientId: "P001", symptom: "Fatiga", category: "metabolico", severity: 3, date: "2024-01-12" },
+  { id: "S002b", patientId: "P001", symptom: "Fatiga", category: "metabolico", severity: 4, date: "2024-01-08" },
+  { id: "S002c", patientId: "P001", symptom: "Fatiga", category: "metabolico", severity: 3, date: "2024-01-03" },
+  { id: "S017", patientId: "P001", symptom: "Dolor de cabeza", category: "neurologico", severity: 2, date: "2024-01-11" },
+  { id: "S017b", patientId: "P001", symptom: "Dolor de cabeza", category: "neurologico", severity: 3, date: "2024-01-06" },
+  
+  // Patient P002 - More diverse symptoms
+  { id: "S003", patientId: "P002", symptom: "Mareos", category: "neurologico", severity: 4, date: "2024-01-13" },
+  { id: "S003b", patientId: "P002", symptom: "Mareos", category: "neurologico", severity: 5, date: "2024-01-08" },
+  { id: "S003c", patientId: "P002", symptom: "Mareos", category: "neurologico", severity: 4, date: "2024-01-03" },
+  { id: "S004", patientId: "P002", symptom: "Dolor de cabeza", category: "neurologico", severity: 3, date: "2024-01-11" },
+  { id: "S004b", patientId: "P002", symptom: "Dolor de cabeza", category: "neurologico", severity: 4, date: "2024-01-07" },
+  { id: "S005", patientId: "P002", symptom: "Estreñimiento", category: "gastrointestinal", severity: 4, date: "2024-01-10" },
+  { id: "S005b", patientId: "P002", symptom: "Estreñimiento", category: "gastrointestinal", severity: 3, date: "2024-01-04" },
+  { id: "S006", patientId: "P002", symptom: "Insomnio", category: "psicologico", severity: 6, date: "2024-01-09" },
+  { id: "S006b", patientId: "P002", symptom: "Insomnio", category: "psicologico", severity: 5, date: "2024-01-05" },
+  { id: "S006c", patientId: "P002", symptom: "Insomnio", category: "psicologico", severity: 4, date: "2024-01-01" },
+  { id: "S018", patientId: "P002", symptom: "Ansiedad", category: "psicologico", severity: 3, date: "2024-01-12" },
+  { id: "S019", patientId: "P002", symptom: "Dolor muscular", category: "musculoesqueletico", severity: 2, date: "2024-01-10" },
+  
+  // Patient P004
+  { id: "S007", patientId: "P004", symptom: "Náuseas", category: "gastrointestinal", severity: 4, date: "2024-01-14" },
+  { id: "S007b", patientId: "P004", symptom: "Náuseas", category: "gastrointestinal", severity: 5, date: "2024-01-10" },
+  { id: "S007c", patientId: "P004", symptom: "Náuseas", category: "gastrointestinal", severity: 6, date: "2024-01-05" },
+  { id: "S008", patientId: "P004", symptom: "Fatiga", category: "metabolico", severity: 4, date: "2024-01-13" },
+  { id: "S008b", patientId: "P004", symptom: "Fatiga", category: "metabolico", severity: 3, date: "2024-01-09" },
+  { id: "S009", patientId: "P004", symptom: "Diarrea", category: "gastrointestinal", severity: 3, date: "2024-01-11" },
+  { id: "S009b", patientId: "P004", symptom: "Diarrea", category: "gastrointestinal", severity: 4, date: "2024-01-07" },
+  { id: "S020", patientId: "P004", symptom: "Palpitaciones", category: "cardiovascular", severity: 2, date: "2024-01-12" },
+  
+  // Patient P005 - Severe symptoms
+  { id: "S010", patientId: "P005", symptom: "Náuseas", category: "gastrointestinal", severity: 7, date: "2024-01-05" },
+  { id: "S010b", patientId: "P005", symptom: "Náuseas", category: "gastrointestinal", severity: 6, date: "2024-01-02" },
+  { id: "S011", patientId: "P005", symptom: "Vómitos", category: "gastrointestinal", severity: 6, date: "2024-01-04" },
+  { id: "S011b", patientId: "P005", symptom: "Vómitos", category: "gastrointestinal", severity: 7, date: "2024-01-01" },
+  { id: "S012", patientId: "P005", symptom: "Fatiga", category: "metabolico", severity: 6, date: "2024-01-03" },
+  { id: "S012b", patientId: "P005", symptom: "Fatiga", category: "metabolico", severity: 5, date: "2023-12-28" },
+  { id: "S013", patientId: "P005", symptom: "Dolor abdominal", category: "gastrointestinal", severity: 5, date: "2024-01-02" },
+  { id: "S013b", patientId: "P005", symptom: "Dolor abdominal", category: "gastrointestinal", severity: 4, date: "2023-12-30" },
+  { id: "S014", patientId: "P005", symptom: "Mareos", category: "neurologico", severity: 4, date: "2024-01-01" },
+  { id: "S014b", patientId: "P005", symptom: "Mareos", category: "neurologico", severity: 5, date: "2023-12-27" },
+  { id: "S021", patientId: "P005", symptom: "Depresión", category: "psicologico", severity: 5, date: "2024-01-03" },
+  
+  // Patient P006 - Mild symptoms
+  { id: "S015", patientId: "P006", symptom: "Fatiga", category: "metabolico", severity: 1, date: "2024-01-10" },
+  { id: "S015b", patientId: "P006", symptom: "Fatiga", category: "metabolico", severity: 2, date: "2024-01-05" },
+  { id: "S016", patientId: "P006", symptom: "Náuseas", category: "gastrointestinal", severity: 1, date: "2024-01-08" },
 ]
 
 export const getPatientSymptoms = (patientId: string) => 
