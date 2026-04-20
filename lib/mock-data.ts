@@ -973,6 +973,14 @@ export const getRelationshipLabel = (rel: Caregiver["relationship"]): string => 
   return labels[rel]
 }
 
+// Clinical Note (Nota Clínica)
+export interface ClinicalNote {
+  id: string
+  author: string
+  date: string
+  content: string
+}
+
 // Clinical Record (Ficha Clínica)
 export interface ClinicalRecord {
   id: string
@@ -982,7 +990,7 @@ export interface ClinicalRecord {
   comorbidities: string[]
   allergies: string[]
   bloodType: string
-  notes: string
+  notes: ClinicalNote[]
   externalSystemId?: string
   importedAt?: string
   lastUpdated: string
@@ -995,10 +1003,29 @@ export const clinicalRecords: ClinicalRecord[] = [
     patientId: "P001",
     recordDate: "2023-10-15",
     diagnosis: "Obesidad grado I (IMC 30-34.9)",
-    comorbidities: ["Hipertensión arterial", "Prediabetes"],
+    comorbidities: ["Prediabetes"],
     allergies: ["Penicilina"],
     bloodType: "O+",
-    notes: "Paciente con antecedentes familiares de diabetes tipo 2. Inicia tratamiento farmacológico con seguimiento quincenal.",
+    notes: [
+      {
+        id: "N001",
+        author: "Dr. Juan Pérez",
+        date: "2024-01-15",
+        content: "Control de seguimiento. Paciente refiere buena tolerancia al tratamiento con Semaglutida 0.5mg semanal. HbA1c descendió de 6.2% a 5.8%, saliendo del rango prediabético. Peso actual 92kg (-13kg desde inicio). Continuar dosis actual y mantener plan nutricional hipocalórico."
+      },
+      {
+        id: "N002",
+        author: "Dr. Juan Pérez",
+        date: "2023-12-18",
+        content: "Paciente reporta náuseas leves los primeros 2 días post-inyección que ceden espontáneamente. Glicemia en ayunas 102 mg/dL. Se observa mejoría en patrón alimentario con reducción de ingesta compulsiva. Peso 95kg. Solicito panel metabólico de control."
+      },
+      {
+        id: "N003",
+        author: "Dr. Juan Pérez",
+        date: "2023-10-15",
+        content: "Primera consulta. Mujer de 45 años con obesidad grado I (IMC 33.8) y prediabetes (HbA1c 6.2%). Antecedentes familiares de DM2 (madre y hermano). Se inicia tratamiento con Semaglutida 0.25mg semanal con titulación progresiva. Se deriva a nutrición para plan alimentario personalizado."
+      }
+    ],
     externalSystemId: "EXT-2023-45678",
     importedAt: "2023-10-15T10:30:00",
     lastUpdated: "2024-01-15",
@@ -1012,7 +1039,14 @@ export const clinicalRecords: ClinicalRecord[] = [
     comorbidities: ["Diabetes tipo 2", "Apnea del sueño", "Artrosis de rodilla"],
     allergies: [],
     bloodType: "A+",
-    notes: "Paciente con múltiples comorbilidades. Requiere monitoreo frecuente de glucosa. Considerar cirugía bariátrica si no hay respuesta al tratamiento en 6 meses.",
+    notes: [
+      {
+        id: "N004",
+        author: "Dr. Juan Pérez",
+        date: "2024-01-10",
+        content: "Paciente con múltiples comorbilidades. Requiere monitoreo frecuente de glucosa. Considerar cirugía bariátrica si no hay respuesta al tratamiento en 6 meses."
+      }
+    ],
     externalSystemId: "EXT-2023-56789",
     importedAt: "2023-11-01T14:15:00",
     lastUpdated: "2024-01-10",
@@ -1026,7 +1060,14 @@ export const clinicalRecords: ClinicalRecord[] = [
     comorbidities: [],
     allergies: ["Sulfas"],
     bloodType: "B+",
-    notes: "Excelente respuesta al tratamiento. Paciente muy motivada y comprometida con cambios de estilo de vida.",
+    notes: [
+      {
+        id: "N005",
+        author: "Dr. Juan Pérez",
+        date: "2024-01-15",
+        content: "Excelente respuesta al tratamiento. Paciente muy motivada y comprometida con cambios de estilo de vida."
+      }
+    ],
     externalSystemId: "EXT-2023-34567",
     importedAt: "2023-09-20T09:00:00",
     lastUpdated: "2024-01-15",
@@ -1040,7 +1081,14 @@ export const clinicalRecords: ClinicalRecord[] = [
     comorbidities: ["Hipertensión arterial", "Hipotiroidismo"],
     allergies: ["Ibuprofeno"],
     bloodType: "AB+",
-    notes: "Paciente de edad avanzada, requiere ajustes de dosis más conservadores. Monitorear función tiroidea.",
+    notes: [
+      {
+        id: "N006",
+        author: "Dr. Juan Pérez",
+        date: "2024-01-14",
+        content: "Paciente de edad avanzada, requiere ajustes de dosis más conservadores. Monitorear función tiroidea."
+      }
+    ],
     lastUpdated: "2024-01-14",
     physician: "Dr. Juan Pérez"
   },
@@ -1052,7 +1100,14 @@ export const clinicalRecords: ClinicalRecord[] = [
     comorbidities: ["Ansiedad", "Depresión leve"],
     allergies: [],
     bloodType: "O-",
-    notes: "Paciente con componente emocional importante. Derivada a psicología para manejo conjunto. Alta incidencia de efectos secundarios.",
+    notes: [
+      {
+        id: "N007",
+        author: "Dr. Juan Pérez",
+        date: "2024-01-05",
+        content: "Paciente con componente emocional importante. Derivada a psicología para manejo conjunto. Alta incidencia de efectos secundarios."
+      }
+    ],
     lastUpdated: "2024-01-05",
     physician: "Dr. Juan Pérez"
   },
@@ -1064,7 +1119,14 @@ export const clinicalRecords: ClinicalRecord[] = [
     comorbidities: ["Dislipidemia"],
     allergies: [],
     bloodType: "A-",
-    notes: "Buena evolución. Lípidos mejorando con la pérdida de peso. Continuar con plan actual.",
+    notes: [
+      {
+        id: "N008",
+        author: "Dr. Juan Pérez",
+        date: "2024-01-15",
+        content: "Buena evolución. Lípidos mejorando con la pérdida de peso. Continuar con plan actual."
+      }
+    ],
     externalSystemId: "EXT-2023-23456",
     importedAt: "2023-10-01T11:45:00",
     lastUpdated: "2024-01-15",
