@@ -47,18 +47,12 @@ export function OverviewSection({ patients: filteredPatients, treatmentLabel }: 
     ? Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
     : 30
 
-  // Filter critical patients (abandonment risk >= 4 OR treatment risk >= 4)
+  // Filter critical patients (Estado Emocional >= 20)
   const criticalPatients = filteredPatients
-    .filter(p => p.abandonmentRisk >= 4 || p.treatmentRisk >= 4)
-    .sort((a, b) => {
-      // Sort by highest risk (abandonment or treatment) descending
-      const aMaxRisk = Math.max(a.abandonmentRisk, a.treatmentRisk)
-      const bMaxRisk = Math.max(b.abandonmentRisk, b.treatmentRisk)
-      return bMaxRisk - aMaxRisk
-    })
+    .filter(p => p.estadoEmocional >= 20)
+    .sort((a, b) => b.estadoEmocional - a.estadoEmocional)
 
-  const highAbandonmentRisk = filteredPatients.filter(p => p.abandonmentRisk >= 4).length
-  const highTreatmentRisk = filteredPatients.filter(p => p.treatmentRisk >= 4).length
+  const highEstadoEmocional = filteredPatients.filter(p => p.estadoEmocional >= 20).length
 
   // Generate alert evolution data based on date range
   const alertEvolutionData = useMemo(() => {
@@ -69,17 +63,15 @@ export function OverviewSection({ patients: filteredPatients, treatmentLabel }: 
     return Array.from({ length: dataPoints }, (_, i) => {
       const dayLabel = days <= 14 ? `Dia ${(i + 1) * interval}` : `Sem ${i + 1}`
       // Simulate historical data with some variance
-      const abandonmentBase = highAbandonmentRisk
-      const treatmentBase = highTreatmentRisk
+      const estadoBase = highEstadoEmocional
       const variance = Math.floor(Math.random() * 2)
       
       return {
         period: dayLabel,
-        abandonmentRisk: Math.max(0, abandonmentBase + (i < dataPoints / 2 ? variance : -variance)),
-        treatmentRisk: Math.max(0, treatmentBase + (i < dataPoints / 2 ? -variance : variance))
+        estadoEmocionalAlto: Math.max(0, estadoBase + (i < dataPoints / 2 ? variance : -variance))
       }
     })
-  }, [daysInRange, highAbandonmentRisk, highTreatmentRisk])
+  }, [daysInRange, highEstadoEmocional])
 
   if (selectedPatient) {
     return (
@@ -176,58 +168,34 @@ export function OverviewSection({ patients: filteredPatients, treatmentLabel }: 
         </Popover>
       </div>
 
-      {/* Alert/Risk Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="bg-card border-destructive/30 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-5">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-destructive/10">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground">Riesgo de Abandono Alto</p>
-                <p className="text-3xl font-bold text-foreground mt-1">{highAbandonmentRisk}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {highAbandonmentRisk === 1 ? "paciente en riesgo" : "pacientes en riesgo"}
-                </p>
-              </div>
-              {highAbandonmentRisk > 0 && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-destructive text-destructive-foreground">
-                  Atención
-                </span>
-              )}
+      {/* Estado Emocional Alert Card */}
+      <Card className="bg-card border-destructive/30 shadow-sm hover:shadow-md transition-shadow">
+        <CardContent className="p-5">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-xl bg-destructive/10">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border-warning/30 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-5">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-warning/10">
-                <ShieldAlert className="h-6 w-6 text-warning" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground">Riesgo de Tratamiento Alto</p>
-                <p className="text-3xl font-bold text-foreground mt-1">{highTreatmentRisk}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {highTreatmentRisk === 1 ? "paciente con complicaciones" : "pacientes con complicaciones"}
-                </p>
-              </div>
-              {highTreatmentRisk > 0 && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-warning text-warning-foreground">
-                  Revisar
-                </span>
-              )}
+            <div className="flex-1">
+              <p className="text-sm font-medium text-muted-foreground">Malestar Emocional Elevado</p>
+              <p className="text-3xl font-bold text-foreground mt-1">{highEstadoEmocional}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {highEstadoEmocional === 1 ? "paciente con malestar" : "pacientes con malestar"}
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            {highEstadoEmocional > 0 && (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-destructive text-destructive-foreground">
+                Atención
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Alert Evolution Chart */}
+      {/* Estado Emocional Evolution Chart */}
       <Card className="border-border" style={{ backgroundColor: "var(--chart-panel-bg)" }}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-foreground">
-            Evolucion de Alertas - Ultimos {daysInRange} dias
+            Evolucion de Estado Emocional - Ultimos {daysInRange} dias
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -267,21 +235,12 @@ export function OverviewSection({ patients: filteredPatients, treatmentLabel }: 
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="abandonmentRisk" 
-                  name="Riesgo Abandono Alto"
+                  dataKey="estadoEmocionalAlto" 
+                  name="Malestar Emocional Elevado"
                   stroke="var(--destructive)" 
                   strokeWidth={2}
                   dot={{ fill: "var(--destructive)", strokeWidth: 0, r: 3 }}
                   activeDot={{ r: 5, fill: "var(--destructive)" }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="treatmentRisk" 
-                  name="Riesgo Tratamiento Alto"
-                  stroke="var(--warning)" 
-                  strokeWidth={2}
-                  dot={{ fill: "var(--warning)", strokeWidth: 0, r: 3 }}
-                  activeDot={{ r: 5, fill: "var(--warning)" }}
                 />
               </LineChart>
             </ResponsiveContainer>

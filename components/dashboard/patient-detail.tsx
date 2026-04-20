@@ -9,12 +9,13 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { AlertBadge, MoodBadge } from "./alert-badge"
+import { AlertBadge, MoodBadge, EstadoEmocionalBadge, EstadoEmocionalInfoModal } from "./alert-badge"
 import { WeightChart } from "./weight-chart"
 import { AdherenceChart } from "./adherence-chart"
 import { MoodChart } from "./mood-chart"
 import { DailyAdherenceChart } from "./daily-adherence-chart"
 import { WeeklyAdherenceChart } from "./weekly-adherence-chart"
+import { AdherenceChartsContainer } from "./adherence-charts-container"
 import { SideEffectsChart } from "./side-effects-chart"
 import { SymptomsList } from "./symptoms-list"
 import { InteractionsTable } from "./interactions-table"
@@ -37,7 +38,8 @@ import {
   getPatientClinicalRecord,
   getPatientMedicationPlan,
   getPatientMessages,
-  getPatientCaregivers
+  getPatientCaregivers,
+  getEstadoEmocionalLevel
 } from "@/lib/mock-data"
 import { 
   Scale, 
@@ -276,75 +278,67 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-warning" />
-                  Niveles de Alerta
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Riesgo de Abandono</p>
-                    <AlertBadge level={patient.abandonmentRisk} type="abandonment" size="md" />
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Riesgo de Tratamiento</p>
-                    <AlertBadge level={patient.treatmentRisk} type="treatment" size="md" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <ShieldAlert className="h-4 w-4 text-destructive" />
+                  <ShieldAlert className="h-4 w-4 text-warning" />
                   Factores de Riesgo
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {patient.adherence < 70 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full bg-destructive" />
-                      <span className="text-muted-foreground">Baja adherencia al tratamiento ({patient.adherence}%)</span>
-                    </div>
-                  )}
-                  {patient.appointmentRate < 70 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full bg-warning" />
-                      <span className="text-muted-foreground">Tasa de asistencia baja ({patient.appointmentRate}%)</span>
-                    </div>
-                  )}
-                  {patient.mood <= 2 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full bg-warning" />
-                      <span className="text-muted-foreground">Estado de animo bajo</span>
-                    </div>
-                  )}
-                  {patient.motivation <= 2 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full bg-warning" />
-                      <span className="text-muted-foreground">Motivacion baja</span>
-                    </div>
-                  )}
-                  {patient.symptomsCount >= 3 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full bg-destructive" />
-                      <span className="text-muted-foreground">Multiples sintomas reportados ({patient.symptomsCount})</span>
-                    </div>
-                  )}
-                  {daysSinceLastActivity > 7 && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="w-2 h-2 rounded-full bg-destructive" />
-                      <span className="text-muted-foreground">Sin actividad reciente ({daysSinceLastActivity} dias)</span>
-                    </div>
-                  )}
-                  {patient.adherence >= 70 && patient.appointmentRate >= 70 && patient.mood > 2 && patient.motivation > 2 && patient.symptomsCount < 3 && daysSinceLastActivity <= 7 && (
-                    <div className="flex items-center gap-2 text-sm text-success">
-                      <span className="w-2 h-2 rounded-full bg-success" />
-                      <span>Sin factores de riesgo identificados</span>
-                    </div>
-                  )}
+                  {(() => {
+                    const avgAdherence = (patient.adherenceFarmacologica + patient.adherenciaCuidado + patient.persistencia) / 3
+                    return (
+                      <>
+                        {avgAdherence < 70 && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="w-2 h-2 rounded-full bg-destructive" />
+                            <span className="text-muted-foreground">Baja adherencia al tratamiento ({Math.round(avgAdherence)}%)</span>
+                          </div>
+                        )}
+                        {patient.appointmentRate < 70 && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="w-2 h-2 rounded-full bg-warning" />
+                            <span className="text-muted-foreground">Tasa de asistencia baja ({patient.appointmentRate}%)</span>
+                          </div>
+                        )}
+                        {patient.mood <= 2 && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="w-2 h-2 rounded-full bg-warning" />
+                            <span className="text-muted-foreground">Estado de animo bajo</span>
+                          </div>
+                        )}
+                        {patient.motivation <= 2 && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="w-2 h-2 rounded-full bg-warning" />
+                            <span className="text-muted-foreground">Motivacion baja</span>
+                          </div>
+                        )}
+                        {patient.symptomsCount >= 3 && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="w-2 h-2 rounded-full bg-destructive" />
+                            <span className="text-muted-foreground">Multiples sintomas reportados ({patient.symptomsCount})</span>
+                          </div>
+                        )}
+                        {daysSinceLastActivity > 7 && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="w-2 h-2 rounded-full bg-destructive" />
+                            <span className="text-muted-foreground">Sin actividad reciente ({daysSinceLastActivity} dias)</span>
+                          </div>
+                        )}
+                        {patient.estadoEmocional >= 8 && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="w-2 h-2 rounded-full bg-destructive" />
+                            <span className="text-muted-foreground">Malestar emocional elevado</span>
+                          </div>
+                        )}
+                        {avgAdherence >= 70 && patient.appointmentRate >= 70 && patient.mood > 2 && patient.motivation > 2 && patient.symptomsCount < 3 && daysSinceLastActivity <= 7 && patient.estadoEmocional < 8 && (
+                          <div className="flex items-center gap-2 text-sm text-success">
+                            <span className="w-2 h-2 rounded-full bg-success" />
+                            <span>Sin factores de riesgo identificados</span>
+                          </div>
+                        )}
+                      </>
+                    )
+                  })()}
                 </div>
               </CardContent>
             </Card>
@@ -353,15 +347,24 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
           {/* Emotional State */}
           <Card className="bg-card border-border">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">Estado Emocional</CardTitle>
+              <CardTitle className="text-sm font-medium text-foreground flex items-center">
+                Estado Emocional
+                <EstadoEmocionalInfoModal />
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <MoodBadge value={patient.mood} />
                   <div>
                     <p className="text-xs text-muted-foreground">Animo</p>
-                    <p className="text-sm font-medium text-foreground">{patient.mood}/5</p>
+                    <p className="text-lg font-bold text-foreground" style={{
+                      color: patient.estadoEmocional <= 3 ? 'var(--success)' : 
+                             patient.estadoEmocional <= 7 ? 'var(--warning)' : 
+                             'var(--destructive)'
+                    }}>
+                      {patient.estadoEmocional}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Escala GHQ-12 · Mayor puntaje = mayor malestar</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
@@ -393,6 +396,8 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             />
           </div>
 
+
+
           {/* Symptoms Table */}
           <SymptomsList symptoms={symptoms} />
         </TabsContent>
@@ -407,10 +412,24 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             <CardContent className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Adherencia al tratamiento</span>
-                  <span className="text-sm font-medium text-foreground">{patient.adherence}%</span>
+                  <span className="text-sm text-muted-foreground">Adherencia Farmacológica</span>
+                  <span className="text-sm font-medium text-foreground">{patient.adherenceFarmacologica}%</span>
                 </div>
-                <Progress value={patient.adherence} className="h-2 bg-muted" />
+                <Progress value={patient.adherenceFarmacologica} className="h-2 bg-muted" />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Adherencia al Cuidado</span>
+                  <span className="text-sm font-medium text-foreground">{patient.adherenciaCuidado}%</span>
+                </div>
+                <Progress value={patient.adherenciaCuidado} className="h-2 bg-muted" />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Persistencia</span>
+                  <span className="text-sm font-medium text-foreground">{patient.persistencia}%</span>
+                </div>
+                <Progress value={patient.persistencia} className="h-2 bg-muted" />
               </div>
               <Separator className="bg-border" />
               <div className="grid grid-cols-3 gap-4 text-center">
@@ -498,11 +517,11 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
           </div>
 
           {/* Adherence Charts */}
-          <DailyAdherenceChart data={dailyAdherence} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <WeeklyAdherenceChart data={weeklyAdherence} />
-            <AdherenceChart data={adherenceHistory} title="Tendencia de Adherencia" />
-          </div>
+          <AdherenceChartsContainer 
+            dailyData={dailyAdherence}
+            weeklyData={weeklyAdherence}
+            adherenceHistoryData={adherenceHistory}
+          />
 
           {/* Side Effects Chart */}
           <SideEffectsChart data={sideEffects} />

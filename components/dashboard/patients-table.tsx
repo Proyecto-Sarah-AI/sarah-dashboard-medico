@@ -17,9 +17,10 @@ import {
 } from "@/components/ui/tooltip"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import type { Patient } from "@/lib/mock-data"
-import { getPatientSymptoms } from "@/lib/mock-data"
+import { getPatientSymptoms, getEstadoEmocionalLevel } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import { ArrowUpDown, ArrowUp, ArrowDown, HelpCircle, CalendarCheck, Stethoscope } from "lucide-react"
+import { EstadoEmocionalInfoModal, getEstadoEmocionalColorClass } from "./alert-badge"
 
 interface PatientsTableProps {
   patients: Patient[]
@@ -27,24 +28,13 @@ interface PatientsTableProps {
   selectedPatientId?: string
 }
 
-type SortKey = "name" | "bmi" | "bmiChange" | "adherence" | "appointmentRate" | "symptomsCount" | "abandonmentRisk" | "treatmentRisk"
+type SortKey = "name" | "bmi" | "bmiChange" | "adherenceFarmacologica" | "appointmentRate" | "symptomsCount" | "estadoEmocional"
 
-// Risk level legend
-const riskLevelLabels: Record<number, string> = {
-  1: "Muy bajo",
-  2: "Bajo",
-  3: "Moderado",
-  4: "Alto",
-  5: "Critico"
-}
-
-// Risk level colors
-const getRiskColor = (level: number) => {
-  if (level === 1) return "bg-success/20 text-success"
-  if (level === 2) return "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-  if (level === 3) return "bg-warning/20 text-warning"
-  if (level === 4) return "bg-orange-500/20 text-orange-600 dark:text-orange-400"
-  return "bg-destructive/20 text-destructive"
+// Estado Emocional level legend
+const estadoEmocionalLegend = {
+  "sin_malestar": { label: "Sin malestar", color: "bg-success/20 text-success" },
+  "malestar_moderado": { label: "Malestar moderado", color: "bg-warning/20 text-warning" },
+  "malestar_elevado": { label: "Malestar elevado", color: "bg-destructive/20 text-destructive" }
 }
 
 // Column definitions with descriptions
@@ -52,11 +42,10 @@ const columnDefinitions: Record<string, string> = {
   name: "Nombre completo del paciente, edad y genero",
   bmi: "Indice de Masa Corporal actual del paciente",
   bmiChange: "Variacion porcentual del IMC desde el inicio del tratamiento",
-  adherence: "Porcentaje de cumplimiento del tratamiento medicamentoso",
+  adherenceFarmacologica: "Cumplimiento de medicamentos, cuidados personales y persistencia en el tratamiento",
   appointmentRate: "Porcentaje y numero de citas medicas asistidas",
   symptomsCount: "Cantidad de sintomas reportados por el paciente",
-  abandonmentRisk: "Probabilidad de que el paciente abandone el tratamiento (1-5)",
-  treatmentRisk: "Riesgo de complicaciones o efectos adversos del tratamiento (1-5)"
+  estadoEmocional: "Puntuacion GHQ-12 del estado emocional del paciente (0-12)"
 }
 type SortDirection = "asc" | "desc" | null
 
@@ -85,6 +74,54 @@ function AdherenceBar({ value }: { value: number }) {
   )
 }
 
+function AdherenceStackedBars({ 
+  farmacologica, 
+  cuidado, 
+  persistencia 
+}: { 
+  farmacologica: number
+  cuidado: number
+  persistencia: number
+}) {
+  const getColor = (val: number) => {
+    if (val >= 75) return "bg-success"
+    if (val >= 50) return "bg-warning"
+    return "bg-destructive"
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-2">
+        <div className="h-2 w-16 rounded-full bg-muted overflow-hidden">
+          <div 
+            className={cn("h-full rounded-full transition-all", getColor(farmacologica))}
+            style={{ width: `${farmacologica}%` }}
+          />
+        </div>
+        <span className="text-xs font-medium w-20">Farmacológica → {farmacologica}%</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="h-2 w-16 rounded-full bg-muted overflow-hidden">
+          <div 
+            className={cn("h-full rounded-full transition-all", getColor(cuidado))}
+            style={{ width: `${cuidado}%` }}
+          />
+        </div>
+        <span className="text-xs font-medium w-20">Cuidado → {cuidado}%</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="h-2 w-16 rounded-full bg-muted overflow-hidden">
+          <div 
+            className={cn("h-full rounded-full transition-all", getColor(persistencia))}
+            style={{ width: `${persistencia}%` }}
+          />
+        </div>
+        <span className="text-xs font-medium w-20">Persistencia → {persistencia}%</span>
+      </div>
+    </div>
+  )
+}
+
 interface SortableHeaderProps {
   label: string
   sortKey: SortKey
@@ -93,9 +130,10 @@ interface SortableHeaderProps {
   onSort: (key: SortKey) => void
   className?: string
   description?: string
+  showInfoModal?: boolean
 }
 
-function SortableHeader({ label, sortKey, currentSort, direction, onSort, className, description }: SortableHeaderProps) {
+function SortableHeader({ label, sortKey, currentSort, direction, onSort, className, description, showInfoModal }: SortableHeaderProps) {
   const isActive = currentSort === sortKey
   
   return (
@@ -106,17 +144,21 @@ function SortableHeader({ label, sortKey, currentSort, direction, onSort, classN
       )}
       onClick={() => onSort(sortKey)}
     >
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 justify-center">
         <span>{label}</span>
-        {description && (
-          <Tooltip>
-            <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <HelpCircle className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground" />
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-[200px] text-xs">
-              {description}
-            </TooltipContent>
-          </Tooltip>
+        {showInfoModal ? (
+          <EstadoEmocionalInfoModal />
+        ) : (
+          description && (
+            <Tooltip>
+              <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <HelpCircle className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[200px] text-xs">
+                {description}
+              </TooltipContent>
+            </Tooltip>
+          )
         )}
         <span className={cn("transition-colors", isActive ? "text-foreground" : "text-muted-foreground/50")}>
           {isActive && direction === "asc" ? (
@@ -172,9 +214,9 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
           aValue = a.bmiChange
           bValue = b.bmiChange
           break
-        case "adherence":
-          aValue = a.adherence
-          bValue = b.adherence
+        case "adherenceFarmacologica":
+          aValue = (a.adherenceFarmacologica + a.adherenciaCuidado + a.persistencia) / 3
+          bValue = (b.adherenceFarmacologica + b.adherenciaCuidado + b.persistencia) / 3
           break
         case "appointmentRate":
           aValue = a.appointmentRate
@@ -184,13 +226,9 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
           aValue = a.symptomsCount
           bValue = b.symptomsCount
           break
-        case "abandonmentRisk":
-          aValue = a.abandonmentRisk
-          bValue = b.abandonmentRisk
-          break
-        case "treatmentRisk":
-          aValue = a.treatmentRisk
-          bValue = b.treatmentRisk
+        case "estadoEmocional":
+          aValue = a.estadoEmocional
+          bValue = b.estadoEmocional
           break
         default:
           return 0
@@ -211,15 +249,15 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
   return (
     <TooltipProvider>
     <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-      {/* Risk Level Legend */}
+      {/* Estado Emocional Legend */}
       <div className="px-4 py-2 bg-muted/20 border-b border-border flex items-center gap-4 flex-wrap text-xs">
-        <span className="text-muted-foreground font-medium">Niveles de riesgo:</span>
-        {[1, 2, 3, 4, 5].map(level => (
-          <span key={level} className="flex items-center gap-1">
-            <span className={cn("w-5 h-5 rounded flex items-center justify-center font-mono font-bold text-xs", getRiskColor(level))}>
-              {level}
+        <span className="text-muted-foreground font-medium">Estado Emocional:</span>
+        {Object.entries(estadoEmocionalLegend).map(([key, value]) => (
+          <span key={key} className="flex items-center gap-1">
+            <span className={cn("w-5 h-5 rounded flex items-center justify-center font-mono font-bold text-xs", value.color)}>
+              ●
             </span>
-            <span className="text-muted-foreground">{riskLevelLabels[level]}</span>
+            <span className="text-muted-foreground">{value.label}</span>
           </span>
         ))}
       </div>
@@ -254,11 +292,21 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
             />
             <SortableHeader 
               label="Adherencia" 
-              sortKey="adherence" 
+              sortKey="adherenceFarmacologica" 
               currentSort={sortKey} 
               direction={sortDirection} 
               onSort={handleSort}
-              description={columnDefinitions.adherence}
+              description={columnDefinitions.adherenceFarmacologica}
+            />
+            <SortableHeader 
+              label="Estado Emocional" 
+              sortKey="estadoEmocional" 
+              currentSort={sortKey} 
+              direction={sortDirection} 
+              onSort={handleSort} 
+              className="text-center"
+              description={columnDefinitions.estadoEmocional}
+              showInfoModal={true}
             />
             <SortableHeader 
               label="Citas Asistidas" 
@@ -277,24 +325,6 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               onSort={handleSort}
               className="text-center"
               description={columnDefinitions.symptomsCount}
-            />
-            <SortableHeader 
-              label="Riesgo Abandono" 
-              sortKey="abandonmentRisk" 
-              currentSort={sortKey} 
-              direction={sortDirection} 
-              onSort={handleSort} 
-              className="text-center"
-              description={columnDefinitions.abandonmentRisk}
-            />
-            <SortableHeader 
-              label="Riesgo Tratamiento" 
-              sortKey="treatmentRisk" 
-              currentSort={sortKey} 
-              direction={sortDirection} 
-              onSort={handleSort} 
-              className="text-center"
-              description={columnDefinitions.treatmentRisk}
             />
           </TableRow>
         </TableHeader>
@@ -338,31 +368,43 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                   {patient.bmiChange > 0 ? "+" : ""}{patient.bmiChange.toFixed(1)}%
                 </span>
               </TableCell>
-              <TableCell className="py-3">
-                <AdherenceBar value={patient.adherence} />
+              <TableCell className="py-3 min-w-[200px]">
+                <AdherenceStackedBars 
+                  farmacologica={patient.adherenceFarmacologica}
+                  cuidado={patient.adherenciaCuidado}
+                  persistencia={patient.persistencia}
+                />
               </TableCell>
-              <TableCell className="text-center py-3">
+              <TableCell className="text-center py-3 px-4">
+                {(() => {
+                  const colorClass = getEstadoEmocionalColorClass(patient.estadoEmocional)
+                  return (
+                    <span className={cn(
+                      "inline-flex items-center justify-center w-7 h-7 rounded font-mono font-bold text-sm",
+                      colorClass
+                    )}>
+                      {patient.estadoEmocional}
+                    </span>
+                  )
+                })()}
+              </TableCell>
+              <TableCell className="text-center py-3 px-4">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center gap-0.5 cursor-help">
-                      <span className={cn(
-                        "font-mono text-sm font-medium",
-                        patient.appointmentRate >= 80 ? "text-success" : 
-                        patient.appointmentRate >= 60 ? "text-warning" : "text-destructive"
-                      )}>
-                        {patient.appointmentRate}%
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {patient.appointmentsAttended}/{patient.appointmentsTotal}
-                      </span>
-                    </div>
+                    <span className={cn(
+                      "font-mono text-sm font-medium cursor-help",
+                      patient.appointmentRate >= 80 ? "text-success" : 
+                      patient.appointmentRate >= 60 ? "text-warning" : "text-destructive"
+                    )}>
+                      {patient.appointmentRate}%
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent>
                     {patient.appointmentsAttended} de {patient.appointmentsTotal} citas asistidas
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
-              <TableCell className="text-center py-3">
+              <TableCell className="text-center py-3 px-4">
                 {(() => {
                   const symptoms = getPatientSymptoms(patient.id)
                   const symptomsCount = symptoms.length
@@ -405,30 +447,6 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                     </Tooltip>
                   )
                 })()}
-              </TableCell>
-              <TableCell className="text-center py-3">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className={cn("inline-flex items-center justify-center w-7 h-7 rounded font-mono font-bold text-sm cursor-help", getRiskColor(patient.abandonmentRisk))}>
-                      {patient.abandonmentRisk}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {riskLevelLabels[patient.abandonmentRisk]}
-                  </TooltipContent>
-                </Tooltip>
-              </TableCell>
-              <TableCell className="text-center py-3">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className={cn("inline-flex items-center justify-center w-7 h-7 rounded font-mono font-bold text-sm cursor-help", getRiskColor(patient.treatmentRisk))}>
-                      {patient.treatmentRisk}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {riskLevelLabels[patient.treatmentRisk]}
-                  </TooltipContent>
-                </Tooltip>
               </TableCell>
             </TableRow>
           ))}

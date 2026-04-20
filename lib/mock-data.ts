@@ -9,7 +9,9 @@ export interface Patient {
   bmi: number
   initialBmi: number
   bmiChange: number
-  adherence: number
+  adherenceFarmacologica: number
+  adherenciaCuidado: number
+  persistencia: number
   mood: number
   motivation: number
   appointmentsAttended: number
@@ -19,8 +21,7 @@ export interface Patient {
   missedEvents: number
   symptomsCount: number
   symptomsSeverity: number
-  abandonmentRisk: number
-  treatmentRisk: number
+  estadoEmocional: number
   lastInteraction: string
   messagesCount: number
   treatmentDays: number
@@ -36,7 +37,9 @@ export interface WeightHistory {
 
 export interface AdherenceHistory {
   date: string
-  adherence: number
+  adherenceFarmacologica: number
+  adherenciaCuidado: number
+  persistencia: number
 }
 
 export interface MoodHistory {
@@ -65,7 +68,9 @@ export const patients: Patient[] = [
     bmi: 33.8,
     initialBmi: 38.6,
     bmiChange: -12.4,
-    adherence: 87,
+    adherenceFarmacologica: 90,
+    adherenciaCuidado: 85,
+    persistencia: 85,
     mood: 4,
     motivation: 4,
     appointmentsAttended: 12,
@@ -75,8 +80,7 @@ export const patients: Patient[] = [
     missedEvents: 1,
     symptomsCount: 2,
     symptomsSeverity: 1.5,
-    abandonmentRisk: 1,
-    treatmentRisk: 2,
+    estadoEmocional: 1,
     lastInteraction: "2024-01-15",
     messagesCount: 156,
     treatmentDays: 90,
@@ -94,7 +98,9 @@ export const patients: Patient[] = [
     bmi: 37.3,
     initialBmi: 39.5,
     bmiChange: -5.6,
-    adherence: 65,
+    adherenceFarmacologica: 68,
+    adherenciaCuidado: 62,
+    persistencia: 65,
     mood: 3,
     motivation: 2,
     appointmentsAttended: 8,
@@ -104,8 +110,7 @@ export const patients: Patient[] = [
     missedEvents: 2,
     symptomsCount: 4,
     symptomsSeverity: 2.2,
-    abandonmentRisk: 4,
-    treatmentRisk: 3,
+    estadoEmocional: 8,
     lastInteraction: "2024-01-10",
     messagesCount: 45,
     treatmentDays: 75,
@@ -123,7 +128,9 @@ export const patients: Patient[] = [
     bmi: 30.5,
     initialBmi: 37.1,
     bmiChange: -17.8,
-    adherence: 95,
+    adherenceFarmacologica: 97,
+    adherenciaCuidado: 93,
+    persistencia: 95,
     mood: 5,
     motivation: 5,
     appointmentsAttended: 16,
@@ -133,8 +140,7 @@ export const patients: Patient[] = [
     missedEvents: 0,
     symptomsCount: 0,
     symptomsSeverity: 0,
-    abandonmentRisk: 1,
-    treatmentRisk: 1,
+    estadoEmocional: 2,
     lastInteraction: "2024-01-15",
     messagesCount: 234,
     treatmentDays: 120,
@@ -152,7 +158,9 @@ export const patients: Patient[] = [
     bmi: 34.5,
     initialBmi: 36.5,
     bmiChange: -5.5,
-    adherence: 72,
+    adherenceFarmacologica: 74,
+    adherenciaCuidado: 70,
+    persistencia: 72,
     mood: 3,
     motivation: 3,
     appointmentsAttended: 9,
@@ -162,8 +170,7 @@ export const patients: Patient[] = [
     missedEvents: 1,
     symptomsCount: 3,
     symptomsSeverity: 2.0,
-    abandonmentRisk: 3,
-    treatmentRisk: 3,
+    estadoEmocional: 6,
     lastInteraction: "2024-01-14",
     messagesCount: 78,
     treatmentDays: 60,
@@ -181,7 +188,9 @@ export const patients: Patient[] = [
     bmi: 30.1,
     initialBmi: 30.1,
     bmiChange: 0,
-    adherence: 45,
+    adherenceFarmacologica: 48,
+    adherenciaCuidado: 42,
+    persistencia: 45,
     mood: 2,
     motivation: 2,
     appointmentsAttended: 3,
@@ -191,8 +200,7 @@ export const patients: Patient[] = [
     missedEvents: 2,
     symptomsCount: 5,
     symptomsSeverity: 2.5,
-    abandonmentRisk: 5,
-    treatmentRisk: 4,
+    estadoEmocional: 10,
     lastInteraction: "2024-01-05",
     messagesCount: 12,
     treatmentDays: 45,
@@ -210,7 +218,9 @@ export const patients: Patient[] = [
     bmi: 31.0,
     initialBmi: 35.9,
     bmiChange: -13.6,
-    adherence: 82,
+    adherenceFarmacologica: 85,
+    adherenciaCuidado: 80,
+    persistencia: 82,
     mood: 4,
     motivation: 4,
     appointmentsAttended: 14,
@@ -220,8 +230,7 @@ export const patients: Patient[] = [
     missedEvents: 0,
     symptomsCount: 1,
     symptomsSeverity: 1.0,
-    abandonmentRisk: 2,
-    treatmentRisk: 2,
+    estadoEmocional: 3,
     lastInteraction: "2024-01-15",
     messagesCount: 189,
     treatmentDays: 100,
@@ -257,11 +266,15 @@ export const getAdherenceHistory = (patientId: string): AdherenceHistory[] => {
   const patient = patients.find(p => p.id === patientId)
   if (!patient) return []
 
-  const variance = patient.adherence > 80 ? 5 : patient.adherence > 60 ? 15 : 25
+  const varianceFarm = patient.adherenceFarmacologica > 80 ? 5 : patient.adherenceFarmacologica > 60 ? 15 : 25
+  const varianceCuid = patient.adherenciaCuidado > 80 ? 5 : patient.adherenciaCuidado > 60 ? 15 : 25
+  const variancePers = patient.persistencia > 80 ? 5 : patient.persistencia > 60 ? 15 : 25
 
   return Array.from({ length: 12 }, (_, i) => ({
     date: `Sem ${i + 1}`,
-    adherence: Math.max(0, Math.min(100, patient.adherence + (Math.random() - 0.5) * variance * 2))
+    adherenceFarmacologica: Math.max(0, Math.min(100, patient.adherenceFarmacologica + (Math.random() - 0.5) * varianceFarm * 2)),
+    adherenciaCuidado: Math.max(0, Math.min(100, patient.adherenciaCuidado + (Math.random() - 0.5) * varianceCuid * 2)),
+    persistencia: Math.max(0, Math.min(100, patient.persistencia + (Math.random() - 0.5) * variancePers * 2))
   }))
 }
 
@@ -275,12 +288,12 @@ export const getDailyAdherenceHistory = (patientId: string): DailyAdherence[] =>
   const patient = patients.find(p => p.id === patientId)
   if (!patient) return []
 
-  const baseAdherence = patient.adherence
-  const variance = patient.adherence > 80 ? 10 : patient.adherence > 60 ? 20 : 30
+  const avgAdherence = (patient.adherenceFarmacologica + patient.adherenciaCuidado + patient.persistencia) / 3
+  const variance = avgAdherence > 80 ? 10 : avgAdherence > 60 ? 20 : 30
 
   return Array.from({ length: 30 }, (_, i) => {
     const day = 30 - i
-    const adherenceValue = Math.max(0, Math.min(100, baseAdherence + (Math.random() - 0.5) * variance))
+    const adherenceValue = Math.max(0, Math.min(100, avgAdherence + (Math.random() - 0.5) * variance))
     return {
       date: `Día ${day}`,
       adherence: Math.round(adherenceValue),
@@ -299,12 +312,12 @@ export const getWeeklyAdherenceHistory = (patientId: string): WeeklyAdherence[] 
   const patient = patients.find(p => p.id === patientId)
   if (!patient) return []
 
-  const baseAdherence = patient.adherence
-  const variance = patient.adherence > 80 ? 8 : patient.adherence > 60 ? 15 : 25
+  const avgAdherence = (patient.adherenceFarmacologica + patient.adherenciaCuidado + patient.persistencia) / 3
+  const variance = avgAdherence > 80 ? 8 : avgAdherence > 60 ? 15 : 25
 
   return Array.from({ length: 8 }, (_, i) => ({
     week: `Sem ${i + 1}`,
-    adherence: Math.round(Math.max(0, Math.min(100, baseAdherence + (Math.random() - 0.5) * variance))),
+    adherence: Math.round(Math.max(0, Math.min(100, avgAdherence + (Math.random() - 0.5) * variance))),
     target: 80
   }))
 }
@@ -345,6 +358,18 @@ export const getMoodHistory = (patientId: string): MoodHistory[] => {
     mood: Math.max(1, Math.min(5, patient.mood + (Math.random() - 0.5) * 2)),
     motivation: Math.max(1, Math.min(5, patient.motivation + (Math.random() - 0.5) * 2))
   }))
+}
+
+export type EstadoEmocionalLevel = "sin_malestar" | "malestar_moderado" | "malestar_elevado"
+
+export const getEstadoEmocionalLevel = (score: number): { level: EstadoEmocionalLevel; label: string; color: string } => {
+  if (score <= 3) {
+    return { level: "sin_malestar", label: "Sin malestar", color: "success" }
+  } else if (score <= 7) {
+    return { level: "malestar_moderado", label: "Malestar moderado", color: "warning" }
+  } else {
+    return { level: "malestar_elevado", label: "Malestar elevado", color: "destructive" }
+  }
 }
 
 export const symptoms: SymptomReport[] = [
@@ -815,7 +840,7 @@ export const getPatientIntents = (patientId: string): PatientIntentData[] => {
     report_symptom: patient.symptomsCount > 2 ? 0.15 : 0.08,
     negative_emotion: isPositiveMood ? 0.05 : 0.15,
     positive_emotion: isPositiveMood ? 0.15 : 0.05,
-    show_resistance: patient.abandonmentRisk >= 4 ? 0.10 : 0.03,
+    show_resistance: patient.estadoEmocional >= 20 ? 0.10 : 0.03,
     request_help: 0.10,
     express_doubt: isHighAdherence ? 0.05 : 0.12,
     confirm: 0.15,
@@ -1151,9 +1176,9 @@ export const getMessageChannelLabel = (channel: MessageChannel): string => {
 
 export const aggregateMetrics = () => {
   const total = patients.length
-  const avgAdherence = patients.reduce((sum, p) => sum + p.adherence, 0) / total
+  const avgAdherence = patients.reduce((sum, p) => sum + (p.adherenceFarmacologica + p.adherenciaCuidado + p.persistencia) / 3, 0) / total
   const avgBmiChange = patients.reduce((sum, p) => sum + p.bmiChange, 0) / total
-  const criticalPatients = patients.filter(p => p.abandonmentRisk >= 4 || p.treatmentRisk >= 4).length
+  const criticalPatients = patients.filter(p => p.estadoEmocional >= 20).length
   const totalSymptoms = patients.reduce((sum, p) => sum + p.symptomsCount, 0)
   const avgMood = patients.reduce((sum, p) => sum + p.mood, 0) / total
   const avgMotivation = patients.reduce((sum, p) => sum + p.motivation, 0) / total
