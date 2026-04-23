@@ -25,6 +25,7 @@ import { ClinicalRecordCard } from "./clinical-record-card"
 import { MedicationPlanCard } from "./medication-plan-card"
 import { MessagingPanel } from "./messaging-panel"
 import { ClinicalMetricsSection } from "./clinical-metrics-section"
+import { ClinicalProfileTab } from "./clinical-profile-tab"
 import type { Patient } from "@/lib/mock-data"
 import { getPatientClinicalMetrics } from "@/lib/clinical-metrics-data"
 import { 
@@ -61,7 +62,8 @@ import {
   CalendarClock,
   User,
   BarChart3,
-  Info
+  Info,
+  Heart
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
@@ -309,6 +311,10 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             <User className="h-4 w-4" />
             Informacion
           </TabsTrigger>
+          <TabsTrigger value="clinical-profile" className="gap-2">
+            <Heart className="h-4 w-4" />
+            Perfil Clinico
+          </TabsTrigger>
           <TabsTrigger value="stats" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             Estadisticas
@@ -463,10 +469,13 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             />
           </div>
 
-
-
           {/* Symptoms Table */}
           <SymptomsList symptoms={symptoms} />
+        </TabsContent>
+
+        {/* Clinical Profile Tab */}
+        <TabsContent value="clinical-profile" className="space-y-4 mt-4">
+          <ClinicalProfileTab metrics={clinicalMetrics} />
         </TabsContent>
 
         {/* Statistics Tab */}

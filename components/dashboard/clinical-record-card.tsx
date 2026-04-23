@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -42,7 +43,11 @@ import {
   Check,
   Plus,
   Trash2,
-  Activity
+  Activity,
+  MessageSquare,
+  Pin,
+  Eye,
+  Archive
 } from "lucide-react"
 import type { ClinicalRecord, ClinicalNote, Patient } from "@/lib/mock-data"
 
@@ -170,6 +175,7 @@ export function ClinicalRecordCard({ record, patient, onImport, onRefresh, onSav
   const [externalId, setExternalId] = useState("")
   const [isImporting, setIsImporting] = useState(false)
   const [isRiskAnalysisOpen, setIsRiskAnalysisOpen] = useState(false)
+  const [isNotesPopoverOpen, setIsNotesPopoverOpen] = useState(false)
   
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false)
@@ -183,6 +189,7 @@ export function ClinicalRecordCard({ record, patient, onImport, onRefresh, onSav
   const [newNoteContent, setNewNoteContent] = useState("")
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editingNoteContent, setEditingNoteContent] = useState("")
+  const [archivedNotes, setArchivedNotes] = useState<Set<string>>(new Set())
 
   const handleImport = async () => {
     if (!externalId.trim()) return
@@ -303,6 +310,18 @@ export function ClinicalRecordCard({ record, patient, onImport, onRefresh, onSav
         notes: editedRecord.notes.filter(note => note.id !== noteId)
       })
     }
+  }
+
+  const handleArchiveNote = (noteId: string) => {
+    setArchivedNotes(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(noteId)) {
+        newSet.delete(noteId)
+      } else {
+        newSet.add(noteId)
+      }
+      return newSet
+    })
   }
 
   // Use edited record when editing, otherwise use original
@@ -720,131 +739,116 @@ export function ClinicalRecordCard({ record, patient, onImport, onRefresh, onSav
 
         <Separator className="bg-border" />
 
-        {/* Clinical Notes - Redesigned */}
+        {/* Clinical Notes - With Popover */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-medium text-muted-foreground">Notas Clínicas</span>
-            {isEditing && !isAddingNote && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-7 px-2 gap-1"
-                onClick={() => setIsAddingNote(true)}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Nueva nota
-              </Button>
-            )}
-          </div>
-
-          {/* New note form */}
-          {isEditing && isAddingNote && (
-            <div className="mb-3 p-3 rounded-md border border-border bg-muted/30">
-              <Textarea
-                placeholder="Escribir nueva nota clínica..."
-                value={newNoteContent}
-                onChange={(e) => setNewNoteContent(e.target.value)}
-                className="text-sm min-h-20 mb-2"
-              />
-              <div className="flex justify-end gap-2">
+            <Popover open={isNotesPopoverOpen} onOpenChange={setIsNotesPopoverOpen}>
+              <PopoverTrigger asChild>
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={() => {
-                    setIsAddingNote(false)
-                    setNewNoteContent("")
-                  }}
+                  className="h-7 px-2 gap-1"
                 >
-                  Cancelar
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  {displayRecord?.notes?.length || 0} notas
                 </Button>
-                <Button 
-                  size="sm" 
-                  onClick={handleAddNote}
-                  disabled={!newNoteContent.trim()}
-                >
-                  Agregar
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Notes list */}
-          <div className="space-y-3">
-            {(displayRecord?.notes || []).map((note) => (
-              <div 
-                key={note.id} 
-                className="p-3 rounded-md bg-muted/50 border border-border/50"
-              >
-                {editingNoteId === note.id ? (
-                  <>
+              </PopoverTrigger>
+              <PopoverContent className="w-96 max-h-96 overflow-y-auto">
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-foreground flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Notas Clínicas
+                  </h4>
+                  
+                  {/* Notes List */}
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {(displayRecord?.notes || []).length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No hay notas clínicas registradas
+                      </p>
+                    ) : (
+                      (displayRecord?.notes || []).map((note) => (
+                        <div
+                          key={note.id}
+                          className={`p-2 rounded-md text-sm border ${
+                            archivedNotes.has(note.id)
+                              ? 'bg-muted/30 border-border/50 opacity-60'
+                              : 'bg-muted/50 border-border'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <div className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
+                              <span className="flex items-center gap-0.5">
+                                <Calendar className="h-3 w-3" />
+                                {note.date}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 text-muted-foreground hover:text-warning"
+                                onClick={() => handleArchiveNote(note.id)}
+                                title={archivedNotes.has(note.id) ? "Desarchivar" : "Archivar"}
+                              >
+                                <Pin className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
+                                onClick={() => handleDeleteNote(note.id)}
+                                title="Eliminar"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-xs text-foreground line-clamp-3">{note.content}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  
+                  <Separator className="bg-border" />
+                  
+                  {/* Add New Note */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-foreground">Agregar Nota</label>
                     <Textarea
-                      value={editingNoteContent}
-                      onChange={(e) => setEditingNoteContent(e.target.value)}
-                      className="text-sm min-h-20 mb-2"
+                      placeholder="Escriba una nueva nota clínica..."
+                      value={newNoteContent}
+                      onChange={(e) => setNewNoteContent(e.target.value)}
+                      className="text-sm min-h-16 resize-none"
                     />
                     <div className="flex justify-end gap-2">
                       <Button 
                         variant="outline" 
                         size="sm" 
                         onClick={() => {
-                          setEditingNoteId(null)
-                          setEditingNoteContent("")
+                          setNewNoteContent("")
+                          setIsNotesPopoverOpen(false)
                         }}
                       >
-                        Cancelar
+                        Cerrar
                       </Button>
                       <Button 
                         size="sm" 
-                        onClick={handleSaveNoteEdit}
+                        onClick={() => {
+                          handleAddNote()
+                          setNewNoteContent("")
+                        }}
+                        disabled={!newNoteContent.trim()}
                       >
-                        Guardar
+                        <Plus className="h-3 w-3 mr-1" />
+                        Agregar
                       </Button>
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {note.author}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {note.date}
-                        </span>
-                      </div>
-                      {isEditing && (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={() => handleEditNote(note.id)}
-                          >
-                            <Pencil className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteNote(note.id)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-sm text-foreground leading-relaxed">{note.content}</p>
-                  </>
-                )}
-              </div>
-            ))}
-            {(displayRecord?.notes || []).length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No hay notas clínicas registradas
-              </p>
-            )}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </CardContent>
