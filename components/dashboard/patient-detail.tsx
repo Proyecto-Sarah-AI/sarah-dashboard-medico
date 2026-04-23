@@ -145,7 +145,7 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
               <div>
                 <h2 className="text-xl font-bold text-foreground">{patient.name}</h2>
                 <p className="text-sm text-muted-foreground">
-                  {patient.age} anos · {patient.gender === "M" ? "Masculino" : "Femenino"} · ID: {patient.id}
+                  RUT: {patient.rut} · {patient.age} anos · {patient.gender === "M" ? "Masculino" : "Femenino"} · ID: {patient.id}
                 </p>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <Badge variant="outline" className="text-xs">

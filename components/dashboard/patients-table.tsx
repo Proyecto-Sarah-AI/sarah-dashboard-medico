@@ -411,7 +411,7 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
                   <div>
                     <p className="font-medium text-foreground">{patient.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {patient.age} años · {patient.gender === "M" ? "Masculino" : "Femenino"}
+                      RUT: {patient.rut} · {patient.age} años · {patient.gender === "M" ? "Masculino" : "Femenino"}
                     </p>
                   </div>
                 </div>
