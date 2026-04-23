@@ -330,7 +330,17 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
           {/* Clinical Metrics Section - replaces Quick Stats with extended metrics */}
           <ClinicalMetricsSection metrics={clinicalMetrics} patient={patient} />
 
-          {/* Risk Alerts & Factors */}
+          {/* Clinical Record - Now wider, taking 2 columns */}
+          <div className="grid grid-cols-1 gap-4">
+            <ClinicalRecordCard 
+              record={clinicalRecord} 
+              patient={patient}
+              onImport={(externalId) => console.log("[v0] Import clinical record:", externalId)}
+              onRefresh={() => console.log("[v0] Refresh clinical record")}
+            />
+          </div>
+
+          {/* Risk Factors and Medication Plan */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="bg-card border-border">
               <CardHeader className="pb-2">
@@ -399,6 +409,14 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
                 </div>
               </CardContent>
             </Card>
+            <MedicationPlanCard 
+              plan={medicationPlan}
+              patientId={patient.id}
+              onUpdateMedication={(medId, updates) => console.log("Update medication:", medId, updates)}
+              onAddMedication={(med) => console.log("Add medication:", med)}
+              onDeleteMedication={(medId) => console.log("Delete medication:", medId)}
+              onUpdateNotes={(notes) => console.log("Update notes:", notes)}
+            />
           </div>
 
           {/* Emotional State */}
@@ -450,24 +468,6 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
               </div>
             </CardContent>
           </Card>
-
-          {/* Clinical Record & Medication Plan */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ClinicalRecordCard 
-              record={clinicalRecord} 
-              patient={patient}
-              onImport={(externalId) => console.log("[v0] Import clinical record:", externalId)}
-              onRefresh={() => console.log("[v0] Refresh clinical record")}
-            />
-            <MedicationPlanCard 
-              plan={medicationPlan}
-              patientId={patient.id}
-              onUpdateMedication={(medId, updates) => console.log("Update medication:", medId, updates)}
-              onAddMedication={(med) => console.log("Add medication:", med)}
-              onDeleteMedication={(medId) => console.log("Delete medication:", medId)}
-              onUpdateNotes={(notes) => console.log("Update notes:", notes)}
-            />
-          </div>
 
           {/* Symptoms Table */}
           <SymptomsList symptoms={symptoms} />
