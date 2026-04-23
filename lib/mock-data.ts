@@ -17,6 +17,7 @@ export interface RiesgoAbandono {
 export interface Patient {
   id: string
   name: string
+  rut: string
   age: number
   gender: "M" | "F"
   weight: number
@@ -86,6 +87,7 @@ export const patients: Patient[] = [
   {
     id: "P001",
     name: "María García",
+    rut: "12345678-9",
     age: 45,
     gender: "F",
     weight: 92,
@@ -120,6 +122,7 @@ export const patients: Patient[] = [
   {
     id: "P002",
     name: "Carlos Rodríguez",
+    rut: "87654321-5",
     age: 52,
     gender: "M",
     weight: 118,
@@ -154,6 +157,7 @@ export const patients: Patient[] = [
   {
     id: "P003",
     name: "Ana Martínez",
+    rut: "11223344-6",
     age: 38,
     gender: "F",
     weight: 78,
@@ -188,6 +192,7 @@ export const patients: Patient[] = [
   {
     id: "P004",
     name: "Roberto Sánchez",
+    rut: "55443322-1",
     age: 61,
     gender: "M",
     weight: 102,
@@ -222,6 +227,7 @@ export const patients: Patient[] = [
   {
     id: "P005",
     name: "Laura Fernández",
+    rut: "66778899-2",
     age: 29,
     gender: "F",
     weight: 85,

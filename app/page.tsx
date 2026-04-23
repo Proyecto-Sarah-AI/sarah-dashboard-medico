@@ -37,7 +37,10 @@ function PatientsSection({
   const filteredPatients = useMemo(() => {
     if (!searchQuery.trim()) return patientsList
     const query = searchQuery.toLowerCase().trim()
-    return patientsList.filter(p => p.name.toLowerCase().includes(query))
+    return patientsList.filter(p => 
+      p.name.toLowerCase().includes(query) || 
+      p.rut.toLowerCase().includes(query)
+    )
   }, [searchQuery, patientsList])
 
   return (
@@ -61,7 +64,7 @@ function PatientsSection({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Buscar por nombre..."
+            placeholder="Buscar por nombre o RUT..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 bg-card"
@@ -79,7 +82,7 @@ function PatientsSection({
           <Search className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground">Sin resultados</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            No se encontraron pacientes con el nombre &quot;{searchQuery}&quot;
+            No se encontraron pacientes con el nombre o RUT &quot;{searchQuery}&quot;
           </p>
         </div>
       )}
