@@ -17,7 +17,6 @@ import { MoodChart } from "./mood-chart"
 import { DailyAdherenceChart } from "./daily-adherence-chart"
 import { WeeklyAdherenceChart } from "./weekly-adherence-chart"
 import { AdherenceChartsContainer } from "./adherence-charts-container"
-import { SideEffectsChart } from "./side-effects-chart"
 import { SymptomsList } from "./symptoms-list"
 import { InteractionsTable } from "./interactions-table"
 import { IntentsByType } from "./intents-by-type"
@@ -35,7 +34,6 @@ import {
   getPatientSymptoms,
   getDailyAdherenceHistory,
   getWeeklyAdherenceHistory,
-  getSideEffectsReport,
   getPatientInteractions,
   getPatientIntents,
   getMedicalEventFrequency,
@@ -106,7 +104,6 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
   const symptoms = getPatientSymptoms(patient.id)
   const dailyAdherence = getDailyAdherenceHistory(patient.id)
   const weeklyAdherence = getWeeklyAdherenceHistory(patient.id)
-  const sideEffects = getSideEffectsReport(patient.id)
   const interactions = getPatientInteractions(patient.id)
   const patientIntents = getPatientIntents(patient.id)
   const medicalEventFrequency = getMedicalEventFrequency(patient.id)
@@ -599,15 +596,9 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             adherenceHistoryData={adherenceHistory}
           />
 
-          {/* Side Effects Chart */}
-          <SideEffectsChart data={sideEffects} />
-
           {/* Weight & Mood Charts */}
           <WeightChart data={weightHistory} />
           <MoodChart data={moodHistory} />
-
-          {/* Intents by Type */}
-          <IntentsByType data={patientIntents} totalMessages={patient.messagesCount} />
         </TabsContent>
 
         {/* Communication Tab */}
@@ -622,6 +613,9 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
 
           {/* Interactions History */}
           <InteractionsTable interactions={interactions} />
+
+          {/* Intents by Type */}
+          <IntentsByType data={patientIntents} totalMessages={patient.messagesCount} />
         </TabsContent>
       </Tabs>
     </div>
