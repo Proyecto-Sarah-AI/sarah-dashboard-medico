@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import * as XLSX from "xlsx"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -61,7 +62,8 @@ import {
   User,
   BarChart3,
   Info,
-  Heart
+  Heart,
+  Download
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
@@ -117,6 +119,80 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
   const lastInteractionDate = new Date(patient.lastInteraction)
   const today = new Date()
   const daysSinceLastActivity = Math.floor((today.getTime() - lastInteractionDate.getTime()) / (1000 * 60 * 60 * 24))
+
+  // Export to Excel function
+  const exportToExcel = () => {
+    if (!dateRange?.from || !dateRange?.to) return
+
+    // Filter weight history by date range
+    const filteredWeightHistory = weightHistory.filter(entry => {
+      const entryDate = new Date(entry.date)
+      return entryDate >= dateRange.from! && entryDate <= dateRange.to!
+    })
+
+    // Patient profile data (Sheet 1)
+    const patientData = [
+      ["FICHA CLINICA DEL PACIENTE"],
+      [""],
+      ["Nombre", patient.name],
+      ["RUT", clinicalRecord?.rut || "No registrado"],
+      ["Fecha de Nacimiento", clinicalRecord?.birthDate ? format(new Date(clinicalRecord.birthDate), "dd/MM/yyyy", { locale: es }) : "No registrado"],
+      ["Sexo", clinicalRecord?.sex === "M" ? "Masculino" : clinicalRecord?.sex === "F" ? "Femenino" : "No registrado"],
+      ["Prevision", clinicalRecord?.healthInsurance || "No registrado"],
+      ["Telefono", clinicalRecord?.phone || "No registrado"],
+      ["Direccion", clinicalRecord?.address || "No registrado"],
+      [""],
+      ["DIAGNOSTICO"],
+      ["Diagnostico Principal", clinicalRecord?.diagnosis || "No registrado"],
+      ["Codigo CIE-10", clinicalRecord?.diagnosisCode || "No registrado"],
+      [""],
+      ["ANTECEDENTES"],
+      ["Alergias", clinicalRecord?.allergies?.join(", ") || "Sin alergias registradas"],
+      ["Tipo de Sangre", clinicalRecord?.bloodType || "No registrado"],
+      ["Antecedentes Familiares", clinicalRecord?.familyHistory || "No registrado"],
+      [""],
+      ["ESTADO ACTUAL"],
+      ["Adherencia al Tratamiento", `${patient.adherence}%`],
+      ["Estado de Animo", `${patient.mood}/5`],
+      ["Motivacion", `${patient.motivation}/5`],
+      ["Nivel de Alerta", patient.alertLevel],
+      ["Ultima Interaccion", format(new Date(patient.lastInteraction), "dd/MM/yyyy HH:mm", { locale: es })],
+      [""],
+      ["PERIODO DEL REPORTE"],
+      ["Desde", format(dateRange.from, "dd/MM/yyyy", { locale: es })],
+      ["Hasta", format(dateRange.to, "dd/MM/yyyy", { locale: es })],
+    ]
+
+    // Evolution data (Sheet 2)
+    const evolutionHeaders = ["Fecha", "Peso (kg)", "IMC", "Estatura (cm)"]
+    const evolutionData = filteredWeightHistory.map(entry => [
+      format(new Date(entry.date), "dd/MM/yyyy", { locale: es }),
+      entry.weight,
+      entry.bmi ? entry.bmi.toFixed(1) : "N/A",
+      patient.height || "N/A"
+    ])
+
+    // Create workbook with UTF-8 support
+    const wb = XLSX.utils.book_new()
+
+    // Sheet 1: Patient Data
+    const ws1 = XLSX.utils.aoa_to_sheet(patientData)
+    ws1["!cols"] = [{ wch: 25 }, { wch: 50 }]
+    XLSX.utils.book_append_sheet(wb, ws1, "Datos Paciente")
+
+    // Sheet 2: Evolution
+    const ws2 = XLSX.utils.aoa_to_sheet([evolutionHeaders, ...evolutionData])
+    ws2["!cols"] = [{ wch: 15 }, { wch: 12 }, { wch: 10 }, { wch: 15 }]
+    XLSX.utils.book_append_sheet(wb, ws2, "Evolucion")
+
+    // Generate filename with patient name and date
+    const patientNameClean = patient.name.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")
+    const dateStr = format(new Date(), "yyyy-MM-dd", { locale: es })
+    const filename = `ficha_clinica_${patientNameClean}_${dateStr}.xlsx`
+
+    // Write and download file
+    XLSX.writeFile(wb, filename, { bookType: "xlsx", type: "binary" })
+  }
 
   return (
     <div className="space-y-4">
@@ -235,8 +311,9 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
               />
             </div>
             
-            {/* Date Range Selector */}
-            <Popover>
+            {/* Date Range Selector + Export */}
+            <div className="flex items-center gap-2">
+              <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="gap-2 text-sm">
                   <CalendarIcon className="h-4 w-4" />
@@ -297,6 +374,27 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
                 </div>
               </PopoverContent>
             </Popover>
+
+            {/* Export Excel Button - Only visible when date range is selected */}
+            {dateRange?.from && dateRange?.to && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={exportToExcel}
+                    className="h-9 w-9"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="sr-only">Exportar Excel</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Exportar ficha clinica a Excel</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -406,6 +504,7 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
                 </div>
               </CardContent>
             </Card>
+            {/* DEPRECATED: Medication Plan - Now with edit capabilities (simulated with console logs) 
             <MedicationPlanCard 
               plan={medicationPlan}
               patientId={patient.id}
@@ -414,6 +513,7 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
               onDeleteMedication={(medId) => console.log("Delete medication:", medId)}
               onUpdateNotes={(notes) => console.log("Update notes:", notes)}
             />
+            */}
           </div>
 
           {/* Emotional State */}
