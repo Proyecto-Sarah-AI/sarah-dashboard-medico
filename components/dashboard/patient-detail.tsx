@@ -22,7 +22,6 @@ import { SymptomsList } from "./symptoms-list"
 import { InteractionsTable } from "./interactions-table"
 import { IntentsByType } from "./intents-by-type"
 import { ClinicalRecordCard } from "./clinical-record-card"
-import { MedicationPlanCard } from "./medication-plan-card"
 import { MessagingPanel } from "./messaging-panel"
 import type { Patient } from "@/lib/mock-data"
 import { 
@@ -37,7 +36,6 @@ import {
   getPatientIntents,
   getMedicalEventFrequency,
   getPatientClinicalRecord,
-  getPatientMedicationPlan,
   getPatientMessages,
   getPatientCaregivers,
   getEstadoEmocionalLevel
@@ -104,7 +102,6 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
   const patientIntents = getPatientIntents(patient.id)
   const medicalEventFrequency = getMedicalEventFrequency(patient.id)
   const clinicalRecord = getPatientClinicalRecord(patient.id)
-  const medicationPlan = getPatientMedicationPlan(patient.id)
   const patientMessages = getPatientMessages(patient.id)
   const caregivers = getPatientCaregivers(patient.id)
 
@@ -413,23 +410,13 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
             </CardContent>
           </Card>
 
-          {/* Clinical Record & Medication Plan */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ClinicalRecordCard 
-              record={clinicalRecord} 
-              patient={patient}
-              onImport={(externalId) => console.log("[v0] Import clinical record:", externalId)}
-              onRefresh={() => console.log("[v0] Refresh clinical record")}
-            />
-            <MedicationPlanCard 
-              plan={medicationPlan}
-              patientId={patient.id}
-              onUpdateMedication={(medId, updates) => console.log("Update medication:", medId, updates)}
-              onAddMedication={(med) => console.log("Add medication:", med)}
-              onDeleteMedication={(medId) => console.log("Delete medication:", medId)}
-              onUpdateNotes={(notes) => console.log("Update notes:", notes)}
-            />
-          </div>
+          {/* Clinical Record (Full Redesigned) */}
+          <ClinicalRecordCard 
+            record={clinicalRecord} 
+            patient={patient}
+            onImport={(externalId) => console.log("[v0] Import clinical record:", externalId)}
+            onRefresh={() => console.log("[v0] Refresh clinical record")}
+          />
 
 
 
