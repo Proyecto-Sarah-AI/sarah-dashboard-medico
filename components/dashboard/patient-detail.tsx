@@ -153,10 +153,10 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
       [""],
       ["ESTADO ACTUAL"],
       ["Adherencia al Tratamiento", `${patient.adherence}%`],
-      ["Estado de Animo", `${patient.mood}/5`],
-      ["Motivacion", `${patient.motivation}/5`],
+      ["Estado de Ánimo", `${patient.mood}/5`],
+      ["Motivación", `${patient.motivation}/5`],
       ["Nivel de Alerta", patient.alertLevel],
-      ["Ultima Interaccion", format(new Date(patient.lastInteraction), "dd/MM/yyyy HH:mm", { locale: es })],
+      ["Última Interacción", format(new Date(patient.lastInteraction), "dd/MM/yyyy HH:mm", { locale: es })],
       [""],
       ["PERIODO DEL REPORTE"],
       ["Desde", format(dateRange.from, "dd/MM/yyyy", { locale: es })],
@@ -664,7 +664,7 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
                   <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                  Frecuencia de Eventos Medicos
+                  Frecuencia de Eventos Médicos
                 </CardTitle>
               </CardHeader>
               <CardContent>

@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'Sarah - Dashboards',
   description: 'Dashboard médico para monitoreo de pacientes con obesidad',
   generator: 'v0.app',
+  other: {
+    'charset': 'utf-8'
+  },
   icons: {
     icon: [
       {
@@ -35,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"

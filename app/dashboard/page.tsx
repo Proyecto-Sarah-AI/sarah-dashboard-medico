@@ -50,7 +50,7 @@ function PatientsSection({
           <h1 className="text-2xl font-bold text-foreground">Pacientes</h1>
           <div className="flex items-center gap-2 mt-1">
             <p className="text-sm text-muted-foreground">
-              Gestion y seguimiento de pacientes
+              Gestión y seguimiento de pacientes
             </p>
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
               <Activity className="h-3 w-3" />
@@ -93,7 +93,7 @@ function PatientsSection({
 const treatmentLabels: Record<string, string> = {
   obesity: "Obesidad",
   diabetes: "Diabetes",
-  hypertension: "Hipertension",
+  hypertension: "Hipertensión",
   all: "Todos los tratamientos"
 }
 
@@ -214,8 +214,8 @@ function DashboardContent() {
       </div>
 
       {/* Main Content */}
-      <main className="md:ml-56 pt-16 md:pt-0">
-        <div className="p-4 md:p-6 max-w-7xl">
+      <main className="md:ml-56 pt-16 md:pt-0 w-full">
+        <div className="p-4 md:p-6 w-full">
           {renderContent()}
         </div>
       </main>

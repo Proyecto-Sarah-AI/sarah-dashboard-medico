@@ -33,10 +33,10 @@ export function LoginForm({ onLogin, role }: LoginFormProps) {
         localStorage.setItem(`${role}_token`, token)
         router.push("/dashboard")
       } else {
-        setError("Credenciales invalidas. Por favor, intente nuevamente.")
+        setError("Credenciales inválidas. Por favor, intente nuevamente.")
       }
     } catch {
-      setError("Error al iniciar sesion. Por favor, intente nuevamente.")
+      setError("Error al iniciar sesión. Por favor, intente nuevamente.")
     } finally {
       setIsLoading(false)
     }
@@ -55,7 +55,7 @@ export function LoginForm({ onLogin, role }: LoginFormProps) {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Sarah</h1>
-                <p className="text-sm text-muted-foreground">Dashboard Medico</p>
+                <p className="text-sm text-muted-foreground">Dashboard Médico</p>
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@ export function LoginForm({ onLogin, role }: LoginFormProps) {
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             <div className="text-center mb-6">
-              <h2 className="text-xl font-semibold text-foreground">Iniciar Sesion</h2>
+              <h2 className="text-xl font-semibold text-foreground">Iniciar Sesión</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Ingrese sus credenciales para acceder
               </p>
@@ -96,13 +96,13 @@ export function LoginForm({ onLogin, role }: LoginFormProps) {
             {/* Password Input */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-foreground">
-                Contrasena
+                Contraseña
               </Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Ingrese su contrasena"
+                  placeholder="Ingrese su contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
@@ -135,16 +135,16 @@ export function LoginForm({ onLogin, role }: LoginFormProps) {
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Iniciando sesion...
+                  Iniciando sesión...
                 </>
               ) : (
-                "Iniciar Sesion"
+                "Iniciar Sesión"
               )}
             </Button>
 
             {/* Role indicator */}
             <p className="text-xs text-center text-muted-foreground">
-              Acceso como: <span className="font-medium text-primary capitalize">{role === "doctor" ? "Medico" : "Administrador"}</span>
+              Acceso como: <span className="font-medium text-primary capitalize">{role === "doctor" ? "Médico" : "Administrador"}</span>
             </p>
           </form>
         </div>
