@@ -31,7 +31,7 @@ interface SidebarNavProps {
 const treatmentOptions = [
   { value: "obesity", label: "Obesidad" },
   { value: "diabetes", label: "Diabetes" },
-  { value: "hypertension", label: "Hipertension" },
+  { value: "hypertension", label: "Hipertensión" },
   { value: "all", label: "Todos" },
 ]
 
@@ -135,8 +135,8 @@ export function SidebarNav({ activeSection, onSectionChange, treatmentType, onTr
           {mounted ? (theme === "dark" ? "Modo claro" : "Modo oscuro") : "Cambiar tema"}
         </Button>
         <div className="px-3 py-2 rounded-lg bg-muted/50">
-          <p className="text-xs text-muted-foreground">Dr. Juan Perez</p>
-          <p className="text-xs text-primary">Endocrinologia</p>
+          <p className="text-xs text-muted-foreground">Dr. Juan Pérez</p>
+          <p className="text-xs text-primary">Endocrinología</p>
         </div>
         <Button
           variant="ghost"
@@ -144,7 +144,7 @@ export function SidebarNav({ activeSection, onSectionChange, treatmentType, onTr
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />
-          Cerrar sesion
+          Cerrar sesión
         </Button>
       </div>
     </aside>
