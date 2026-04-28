@@ -295,7 +295,7 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
 
   return (
     <TooltipProvider>
-    <div className="rounded-xl border border-border bg-card shadow-sm flex flex-col w-full">
+    <div className="rounded-xl border border-border bg-card shadow-sm flex flex-col w-full min-w-0">
       {/* Estado Emocional Legend */}
       <div className="px-4 py-2 bg-muted/20 border-b border-border flex items-center justify-between gap-4 flex-wrap text-xs">
         <div className="flex items-center gap-4 flex-wrap">

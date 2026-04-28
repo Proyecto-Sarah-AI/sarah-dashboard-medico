@@ -16,10 +16,21 @@ import {
   TrendingDown,
   Clock,
   MessageSquare,
-  ChevronRight
+  ChevronRight,
+  HelpCircle,
+  Brain,
+  Target,
+  Gauge,
+  X
 } from "lucide-react"
 import { useState, useMemo } from "react"
 import { cn } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { 
   BarChart, 
   Bar, 
@@ -85,6 +96,157 @@ const categoryColors = {
   abandono: "border-destructive/30 bg-destructive/5",
   emocional: "border-warning/30 bg-warning/5",
   motivacion: "border-orange-500/30 bg-orange-500/5"
+}
+
+// ─── Modal de definiciones clínicas ────────────────────────────────────────
+function AlertasInfoModal() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted hover:bg-muted-foreground/20 text-muted-foreground hover:text-foreground transition-colors"
+        aria-label="Ver definiciones clínicas"
+      >
+        <HelpCircle className="w-3.5 h-3.5" />
+      </button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <HelpCircle className="h-4 w-4 text-primary" />
+              Definiciones clínicas y escalas
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-5 pt-1 text-sm">
+
+            {/* GHQ-12 */}
+            <div className="rounded-lg border border-border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-md bg-warning/10">
+                  <Brain className="h-4 w-4 text-warning" />
+                </div>
+                <h3 className="font-semibold text-foreground">GHQ-12 — General Health Questionnaire</h3>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                Cuestionario de 12 ítems que mide el <strong className="text-foreground">malestar psicológico general</strong> del paciente en las últimas semanas. Cada ítem puntúa 0 o 1, dando un rango de <strong className="text-foreground">0 a 12</strong>.
+              </p>
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Escala de interpretación</p>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {[
+                    { range: "0 – 2", label: "Sin malestar", color: "bg-success/15 text-success border-success/20" },
+                    { range: "3 – 6", label: "Malestar moderado", color: "bg-warning/15 text-warning border-warning/20" },
+                    { range: "7 – 12", label: "Malestar elevado — alerta clínica", color: "bg-destructive/15 text-destructive border-destructive/20" },
+                  ].map(item => (
+                    <div key={item.range} className={cn("flex items-center justify-between px-3 py-1.5 rounded-md border text-xs font-medium", item.color)}>
+                      <span>{item.label}</span>
+                      <span className="font-mono">{item.range}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                <strong className="text-foreground">Umbrales de alerta:</strong> GHQ-12 ≥ 7 activa alerta de malestar severo. GHQ-12 ≥ 3 combinado con Readiness ≤ 2 activa alerta ROJA de riesgo muy alto.
+              </div>
+            </div>
+
+            {/* Readiness Ruler */}
+            <div className="rounded-lg border border-border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-md bg-primary/10">
+                  <Target className="h-4 w-4 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Readiness Ruler — Escala de disposición al cambio</h3>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                Escala de <strong className="text-foreground">1 a 5</strong> basada en el modelo transteórico de Prochaska que mide cuán preparado está el paciente para cambiar sus hábitos y adherirse al tratamiento.
+              </p>
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Estadios</p>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {[
+                    { value: "1", label: "No preparado", desc: "Precontemplación — no ve necesidad de cambio", color: "bg-destructive/15 border-destructive/20" },
+                    { value: "2", label: "Pensando", desc: "Contemplación — considera cambiar, pero no ahora", color: "bg-orange-500/15 border-orange-500/20" },
+                    { value: "3", label: "Quiere cambiar", desc: "Preparación — intención de cambio próximamente", color: "bg-warning/15 border-warning/20" },
+                    { value: "4", label: "Preparándose", desc: "Acción — tomando pasos concretos", color: "bg-success/15 border-success/20" },
+                    { value: "5", label: "Activo", desc: "Mantenimiento — cambio sostenido en el tiempo", color: "bg-success/20 border-success/30" },
+                  ].map(item => (
+                    <div key={item.value} className={cn("flex items-start gap-3 px-3 py-2 rounded-md border text-xs", item.color)}>
+                      <span className="font-mono font-bold text-sm w-4 flex-shrink-0 mt-0.5">{item.value}</span>
+                      <div>
+                        <span className="font-semibold text-foreground">{item.label}</span>
+                        <span className="text-muted-foreground"> — {item.desc}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                <strong className="text-foreground">Umbral de alerta:</strong> Readiness ≤ 2 por más de 2 semanas activa protocolo de re-engagement. Readiness ≤ 2 combinado con GHQ-12 ≥ 3 activa alerta de riesgo muy alto.
+              </div>
+            </div>
+
+            {/* Riesgo de abandono */}
+            <div className="rounded-lg border border-border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-md bg-destructive/10">
+                  <Gauge className="h-4 w-4 text-destructive" />
+                </div>
+                <h3 className="font-semibold text-foreground">Nivel de riesgo de abandono</h3>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                Escala del <strong className="text-foreground">1 (muy alto) al 5 (muy bajo)</strong> calculada automáticamente a partir de múltiples señales clínicas del paciente.
+              </p>
+              <div className="space-y-1.5">
+                {[
+                  { nivel: "1", label: "Muy alto", desc: "Escalada inmediata — contacto en &lt; 24 h", color: "bg-destructive/15 text-destructive border-destructive/20" },
+                  { nivel: "2", label: "Alto", desc: "Requiere intervención activa esta semana", color: "bg-orange-500/15 text-orange-600 border-orange-500/20" },
+                  { nivel: "3", label: "Moderado", desc: "Monitoreo reforzado en próximas consultas", color: "bg-warning/15 text-warning border-warning/20" },
+                  { nivel: "4", label: "Bajo", desc: "Seguimiento estándar", color: "bg-success/10 text-success border-success/20" },
+                  { nivel: "5", label: "Muy bajo", desc: "Paciente estable y adherente", color: "bg-success/15 text-success border-success/30" },
+                ].map(item => (
+                  <div key={item.nivel} className={cn("flex items-center gap-3 px-3 py-2 rounded-md border text-xs", item.color)}>
+                    <span className="font-mono font-bold text-base w-4 flex-shrink-0">{item.nivel}</span>
+                    <div className="flex-1 flex items-center justify-between gap-2">
+                      <span className="font-semibold">{item.label}</span>
+                      <span className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: item.desc }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Señales de alerta activas */}
+            <div className="rounded-lg border border-border p-4 space-y-2">
+              <h3 className="font-semibold text-foreground text-sm">Señales que activan alertas</h3>
+              <ul className="space-y-1.5 text-xs text-muted-foreground">
+                {[
+                  "GHQ-12 ≥ 7 → Alerta de malestar severo, escalada al equipo clínico",
+                  "GHQ-12 ≥ 3 + Readiness ≤ 2 simultáneamente → Alerta ROJA de riesgo muy alto",
+                  "Readiness ≤ 2 por más de 2 semanas → Protocolo de re-engagement",
+                  "Riesgo de abandono nivel ≤ 2 → Contacto humano en menos de 24 h",
+                  "Síntoma con severidad ≥ 6/7 → Escalada inmediata al médico",
+                  "Silencio > 7 días sin respuesta → Escalada automática a nivel de riesgo 2",
+                  "Adherencia acumulada < 40% en últimos 14 días → Alerta de abandono en curso",
+                  "Más de 2 controles no asistidos consecutivos → Alerta de pérdida de seguimiento",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 flex-shrink-0 mt-1.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
 }
 
 export function OverviewSection({ patients: filteredPatients, treatmentLabel, onSelectPatientWithTab }: OverviewSectionProps) {
@@ -435,8 +597,9 @@ export function OverviewSection({ patients: filteredPatients, treatmentLabel, on
       {/* Active Alerts Section */}
       <div>
         <div className="flex flex-col gap-1 mb-4 md:flex-row md:items-center md:justify-between">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             Alertas activas
+            <AlertasInfoModal />
           </h2>
           <p className="text-sm text-muted-foreground">
             {activeAlerts.length} {activeAlerts.length === 1 ? "alerta" : "alertas"} ordenadas por severidad

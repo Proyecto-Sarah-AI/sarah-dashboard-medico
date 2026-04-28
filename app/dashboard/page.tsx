@@ -44,7 +44,7 @@ function PatientsSection({
   }, [searchQuery, patientsList])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0 w-full overflow-hidden">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Pacientes</h1>
@@ -162,7 +162,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <SidebarNav 
@@ -214,8 +214,9 @@ function DashboardContent() {
       </div>
 
       {/* Main Content */}
-      <main className="md:ml-56 pt-16 md:pt-0 w-full">
-        <div className="p-4 md:p-6 w-full">
+      {/* Main Content */}
+      <main className="md:ml-56 pt-16 md:pt-0 w-[calc(100%-0px)] md:w-[calc(100%-14rem)] min-w-0">
+        <div className="p-4 md:p-6 min-w-0 w-full">
           {renderContent()}
         </div>
       </main>
