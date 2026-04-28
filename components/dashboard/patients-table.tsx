@@ -20,7 +20,7 @@ import type { Patient } from "@/lib/mock-data"
 import { getPatientSymptoms, getEstadoEmocionalLevel, getRiesgoLabel, getRiesgoColor, getCondicionLabel, getAccionRecomendada } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import { ArrowUpDown, ArrowUp, ArrowDown, HelpCircle, CalendarCheck, Stethoscope } from "lucide-react"
-import { EstadoEmocionalInfoModal, getEstadoEmocionalColorClass } from "./alert-badge"
+import { EstadoEmocionalInfoModal, MotivacionInfoModal, getEstadoEmocionalColorClass } from "./alert-badge"
 
 interface PatientsTableProps {
   patients: Patient[]
@@ -167,10 +167,10 @@ interface SortableHeaderProps {
   onSort: (key: SortKey) => void
   className?: string
   description?: string
-  showInfoModal?: boolean
+  infoModal?: "estadoEmocional" | "motivacion"
 }
 
-function SortableHeader({ label, sortKey, currentSort, direction, onSort, className, description, showInfoModal }: SortableHeaderProps) {
+function SortableHeader({ label, sortKey, currentSort, direction, onSort, className, description, infoModal }: SortableHeaderProps) {
   const isActive = currentSort === sortKey
   
   return (
@@ -183,8 +183,10 @@ function SortableHeader({ label, sortKey, currentSort, direction, onSort, classN
     >
       <div className="flex items-center gap-1.5 justify-center">
         <span>{label}</span>
-        {showInfoModal ? (
+        {infoModal === "estadoEmocional" ? (
           <EstadoEmocionalInfoModal />
+        ) : infoModal === "motivacion" ? (
+          <MotivacionInfoModal />
         ) : (
           description && (
             <Tooltip>
@@ -351,7 +353,7 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               onSort={handleSort} 
               className="text-center"
               description={columnDefinitions.estadoEmocional}
-              showInfoModal={true}
+              infoModal="estadoEmocional"
             />
             <SortableHeader 
               label="Motivacion" 
@@ -361,6 +363,7 @@ export function PatientsTable({ patients, onSelectPatient, selectedPatientId }: 
               onSort={handleSort} 
               className="text-center"
               description={columnDefinitions.motivation}
+              infoModal="motivacion"
             />
             <SortableHeader 
               label="Citas Asistidas" 

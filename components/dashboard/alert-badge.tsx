@@ -161,6 +161,152 @@ export function EstadoEmocionalInfoModal() {
   )
 }
 
+// Motivation (Readiness Ruler) data for the modal
+const motivationLevelData = [
+  {
+    puntaje: 1,
+    etiqueta: "No estoy nada preparado para cambiar",
+    implicancia: "Riesgo muy alto de abandono (pre-contemplación)",
+    accion: "Activar alerta. Preguntar por barreras. Escalar si es necesario."
+  },
+  {
+    puntaje: 2,
+    etiqueta: "Estoy pensando en cambiar, pero no ahora",
+    implicancia: "En pre-contemplación / contemplación temprana",
+    accion: "Explorar ambivalencia. Técnicas de entrevista motivacional."
+  },
+  {
+    puntaje: 3,
+    etiqueta: "Quiero cambiar, pero no sé cómo",
+    implicancia: "En contemplación / preparación",
+    accion: "Educar, ofrecer estrategias concretas y orientación."
+  },
+  {
+    puntaje: 4,
+    etiqueta: "Me estoy preparando para cambiar",
+    implicancia: "En preparación / acción temprana",
+    accion: "Reforzar positivamente. Ayudar a planificar próximos pasos."
+  },
+  {
+    puntaje: 5,
+    etiqueta: "Ya estoy tomando medidas activamente",
+    implicancia: "En acción / mantenimiento",
+    accion: "Refuerzo positivo. Reducir frecuencia de contacto gradualmente."
+  }
+]
+
+const getMotivationColor = (puntaje: number) => {
+  switch (puntaje) {
+    case 1:
+      return {
+        colorClass: "bg-destructive",
+        bgClass: "bg-destructive/10 border-destructive/20",
+        textClass: "text-destructive"
+      }
+    case 2:
+      return {
+        colorClass: "bg-orange-500",
+        bgClass: "bg-orange-500/10 border-orange-500/20",
+        textClass: "text-orange-500"
+      }
+    case 3:
+      return {
+        colorClass: "bg-warning",
+        bgClass: "bg-warning/10 border-warning/20",
+        textClass: "text-warning"
+      }
+    case 4:
+      return {
+        colorClass: "bg-lime-500",
+        bgClass: "bg-lime-500/10 border-lime-500/20",
+        textClass: "text-lime-500"
+      }
+    case 5:
+      return {
+        colorClass: "bg-success",
+        bgClass: "bg-success/10 border-success/20",
+        textClass: "text-success"
+      }
+    default:
+      return {
+        colorClass: "bg-muted",
+        bgClass: "bg-muted/10 border-muted/20",
+        textClass: "text-muted-foreground"
+      }
+  }
+}
+
+export function MotivacionInfoModal() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <>
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsOpen(true)
+        }}
+        className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-muted transition-colors"
+        title="Explicación de Motivación (Readiness Ruler)"
+      >
+        <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+      </button>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Escala de Disposición al Cambio (Readiness Ruler)</DialogTitle>
+            <p className="text-sm text-muted-foreground">Referencia clínica — escala 1 a 5</p>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            {motivationLevelData.map((level) => {
+              const colors = getMotivationColor(level.puntaje)
+              return (
+                <div 
+                  key={level.puntaje}
+                  className={cn(
+                    "flex rounded-lg border overflow-hidden",
+                    colors.bgClass
+                  )}
+                >
+                  {/* Color stripe */}
+                  <div className={cn("w-2 flex-shrink-0", colors.colorClass)} />
+                  
+                  <div className="flex-1 p-4 space-y-2">
+                    {/* Header with score and label */}
+                    <div className="flex items-start gap-2">
+                      <span className={cn("text-lg font-bold", colors.textClass)}>
+                        {level.puntaje}
+                      </span>
+                      <span className="text-base font-semibold">— {level.etiqueta}</span>
+                    </div>
+
+                    {/* Clinical implication */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-muted-foreground">Implicancia clínica:</span>
+                      <span className="text-sm">{level.implicancia}</span>
+                    </div>
+
+                    {/* Recommended action - highlighted */}
+                    <div className={cn(
+                      "p-3 rounded-md border-l-4",
+                      colors.colorClass,
+                      "bg-background/60"
+                    )}>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Acción de Sarah:</p>
+                      <p className="text-sm font-semibold">{level.accion}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
 // Risk level configurations for the modal
 const riskLevelData = [
   {
