@@ -1,5 +1,3 @@
-"use client"
-
 import { LoginForm } from "@/components/auth/login-form"
 
 // Mock login function - replace with actual API call
