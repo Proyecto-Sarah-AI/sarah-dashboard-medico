@@ -53,7 +53,7 @@ export function SidebarNav({ activeSection, onSectionChange, treatmentType, onTr
     localStorage.removeItem("doctor_token")
     localStorage.removeItem("admin_token")
     // Redirect to login
-    navigate("/medico/login")
+    navigate("/login")
   }
 
   const currentTreatmentLabel = treatmentOptions.find(t => t.value === treatmentType)?.label || "Obesidad"

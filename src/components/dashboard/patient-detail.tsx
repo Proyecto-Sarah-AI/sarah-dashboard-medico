@@ -97,7 +97,7 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
     from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
     to: new Date()
   })
-  const [isRiesgoModalOpen, setIsRiesgoModalOpen] = useState(false)
+  const [isRiesgoModalOpen, setIsRiesgoModalOpen] = useState<boolean>(false)
 
   const weightHistory = getWeightHistory(patient.id)
   const adherenceHistory = getAdherenceHistory(patient.id)
@@ -151,10 +151,10 @@ export function PatientDetail({ patient, onClose }: PatientDetailProps) {
       ["Antecedentes Familiares", clinicalRecord?.familyHistory || "No registrado"],
       [""],
       ["ESTADO ACTUAL"],
-      ["Adherencia al Tratamiento", `${patient.adherence}%`],
+      ["Adherencia al Tratamiento", `${Math.round((patient.adherenceFarmacologica + patient.adherenciaCuidado + patient.persistencia) / 3)}%`],
       ["Estado de Ánimo", `${patient.mood}/5`],
       ["Motivación", `${patient.motivation}/5`],
-      ["Nivel de Alerta", patient.alertLevel],
+      ["Nivel de Alerta", getRiesgoLabel(patient.riesgoAbandono.nivel)],
       ["Última Interacción", format(new Date(patient.lastInteraction), "dd/MM/yyyy HH:mm", { locale: es })],
       [""],
       ["PERIODO DEL REPORTE"],

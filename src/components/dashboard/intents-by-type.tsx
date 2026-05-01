@@ -19,6 +19,7 @@ import {
   Cell,
   Legend
 } from "recharts"
+import type { Payload } from "recharts/types/component/DefaultTooltipContent"
 import type { PatientIntentData } from "@/lib/mock-data"
 import { MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -108,8 +109,8 @@ export function IntentsByType({ data, totalMessages }: IntentsByTypeProps) {
                   borderRadius: "8px",
                   color: "var(--foreground)"
                 }}
-                formatter={(value: number, name: string, props: { payload: PatientIntentData }) => [
-                  `${value} mensajes (${props.payload.percentage}%)`, 
+                formatter={(value: number, name: string, item: Payload<number, "Cantidad">) => [
+                  `${value} mensajes (${(item.payload as PatientIntentData | undefined)?.percentage ?? 0}%)`,
                   "Cantidad"
                 ]}
               />

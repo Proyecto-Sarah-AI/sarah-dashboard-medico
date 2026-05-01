@@ -284,9 +284,9 @@ export function ClinicalRecordCard({ record, patient, onImport, onRefresh }: Cli
     healthInsurance: extendedRecord?.healthInsurance || "Fonasa",
     phone: extendedRecord?.phone || "",
     address: extendedRecord?.address || "",
-    tobacco: extendedRecord?.habits?.tobacco || false,
-    alcohol: extendedRecord?.habits?.alcohol || false,
-    physicalActivity: extendedRecord?.habits?.physicalActivity || true,
+    tobacco: extendedRecord?.habits?.tobacco ?? false,
+    alcohol: extendedRecord?.habits?.alcohol ?? false,
+    physicalActivity: extendedRecord?.habits?.physicalActivity ?? false,
     familyHistory: extendedRecord?.familyHistory || "",
     diagnosis: extendedRecord?.diagnosis || "",
     cie10Code: extendedRecord?.cie10Code || ""

@@ -400,7 +400,7 @@ export const getSideEffectsReport = (patientId: string): SideEffectReport[] => {
   }, {} as Record<string, { count: number; maxSeverity: number }>)
 
   // Map 0-7 scale to mild/moderate/severe: 0-2 = mild, 3-5 = moderate, 6-7 = severe
-  return Object.entries(grouped).map(([name, data]) => ({
+  return Object.entries(grouped).map(([name, data]): SideEffectReport => ({
     name,
     count: data.count,
     severity: data.maxSeverity <= 2 ? "mild" : data.maxSeverity <= 5 ? "moderate" : "severe"
@@ -974,7 +974,7 @@ export const getPatientIntents = (patientId: string): PatientIntentData[] => {
 
   // Generate intent distribution based on patient profile
   const totalMessages = patient.messagesCount
-  const isHighAdherence = patient.adherence >= 80
+  const isHighAdherence = patient.adherenceFarmacologica >= 80
   const isPositiveMood = patient.mood >= 4
 
   // Base distribution varies by patient profile
@@ -1025,7 +1025,7 @@ export const getMedicalEventFrequency = (patientId: string): MedicalEventFrequen
   return {
     eventsPerWeek: Math.round((totalEvents / weeksInTreatment) * 10) / 10,
     scheduledEvents: totalEvents,
-    completedEvents: patient.appointmentsAttended + Math.floor(patient.adherence / 100 * patient.treatmentDays / 7) * 2
+    completedEvents: patient.appointmentsAttended + Math.floor(patient.adherenceFarmacologica / 100 * patient.treatmentDays / 7) * 2
   }
 }
 
@@ -1084,6 +1084,7 @@ export interface ClinicalRecord {
   patientId: string
   recordDate: string
   diagnosis: string
+  diagnosisCode?: string
   comorbidities: string[]
   allergies: string[]
   bloodType: string
@@ -1092,6 +1093,19 @@ export interface ClinicalRecord {
   importedAt?: string
   lastUpdated: string
   physician: string
+  // Extended demographic/clinical fields
+  rut?: string
+  birthDate?: string
+  sex?: "M" | "F"
+  healthInsurance?: "Fonasa" | "Isapre"
+  phone?: string
+  address?: string
+  familyHistory?: string
+  habits?: {
+    tobacco: boolean
+    alcohol: boolean
+    physicalActivity: boolean
+  }
 }
 
 export const clinicalRecords: ClinicalRecord[] = [
