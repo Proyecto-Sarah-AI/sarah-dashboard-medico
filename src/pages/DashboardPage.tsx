@@ -1,7 +1,5 @@
-"use client"
-
 import { useState, useMemo, useEffect, Suspense } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useSearchParams, useNavigate } from "react-router-dom"
 import { SidebarNav } from "@/components/dashboard/sidebar-nav"
 import { OverviewSection } from "@/components/dashboard/overview-section"
 import { PatientsTable } from "@/components/dashboard/patients-table"
@@ -98,8 +96,8 @@ const treatmentLabels: Record<string, string> = {
 }
 
 function DashboardContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   
   const [activeSection, setActiveSection] = useState("patients")
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
@@ -112,8 +110,8 @@ function DashboardContent() {
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString())
     params.set("treatment", treatmentType)
-    router.replace(`?${params.toString()}`, { scroll: false })
-  }, [treatmentType, router, searchParams])
+    setSearchParams(params, { replace: true })
+  }, [treatmentType, setSearchParams, searchParams])
 
   // Handle treatment change with navigation logic
   const handleTreatmentChange = (newTreatment: string) => {
@@ -213,7 +211,6 @@ function DashboardContent() {
         </div>
       </div>
 
-      {/* Main Content */}
       {/* Main Content */}
       <main className="md:ml-56 pt-16 md:pt-0 w-[calc(100%-0px)] md:w-[calc(100%-14rem)] min-w-0">
         <div className="p-4 md:p-6 min-w-0 w-full">

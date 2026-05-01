@@ -1,5 +1,3 @@
-"use client"
-
 import { cn } from "@/lib/utils"
 import { 
   AlertTriangle, 
@@ -12,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useNavigate } from "react-router-dom"
 import {
   Select,
   SelectContent,
