@@ -29,7 +29,7 @@ export function LoginForm({ onLogin, role }: LoginFormProps) {
       
       if (token) {
         localStorage.setItem(`${role}_token`, token)
-        navigate("/dashboard")
+        navigate("/medico/dashboard")
       } else {
         setError("Credenciales inválidas. Por favor, intente nuevamente.")
       }
